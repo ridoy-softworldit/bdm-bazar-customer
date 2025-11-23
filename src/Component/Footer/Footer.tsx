@@ -179,41 +179,49 @@ export default function BengaliFooter() {
                   Stay Connected
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  <a
-                    href={contactInfo?.facebookUrl?.[0] || "#"}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-8 h-8 sm:w-9 sm:h-9 bg-blue-600 text-white rounded flex items-center justify-center hover:bg-blue-700 transition-colors"
-                  >
-                    <Facebook className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </a>
+                  {contactInfo?.facebookUrl?.[0] && (
+                    <a
+                      href={contactInfo.facebookUrl[0]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-8 h-8 sm:w-9 sm:h-9 bg-blue-600 text-white rounded flex items-center justify-center hover:bg-blue-700 transition-colors"
+                    >
+                      <Facebook className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </a>
+                  )}
 
-                  <a
-                    href={contactInfo?.whatsappLink?.[0] || "#"}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-8 h-8 sm:w-9 sm:h-9 bg-green-500 text-white rounded flex items-center justify-center hover:bg-green-600 transition-colors"
-                  >
-                    <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </a>
+                  {contactInfo?.whatsappLink?.[0] && (
+                    <a
+                      href={contactInfo.whatsappLink[0]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-8 h-8 sm:w-9 sm:h-9 bg-green-500 text-white rounded flex items-center justify-center hover:bg-green-600 transition-colors"
+                    >
+                      <Phone className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </a>
+                  )}
 
-                  <a
-                    href={contactInfo?.instagramUrl?.[0] || "#"}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-8 h-8 sm:w-9 sm:h-9 bg-pink-500 text-white rounded flex items-center justify-center hover:bg-pink-600 transition-colors"
-                  >
-                    <Instagram className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </a>
+                  {contactInfo?.instagramUrl?.[0] && (
+                    <a
+                      href={contactInfo.instagramUrl[0]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-8 h-8 sm:w-9 sm:h-9 bg-pink-500 text-white rounded flex items-center justify-center hover:bg-pink-600 transition-colors"
+                    >
+                      <Instagram className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </a>
+                  )}
 
-                  <a
-                    href={contactInfo?.youtubeUrl?.[0] || "#"}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-8 h-8 sm:w-9 sm:h-9 bg-red-600 text-white rounded flex items-center justify-center hover:bg-red-700 transition-colors"
-                  >
-                    <Youtube className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </a>
+                  {contactInfo?.youtubeUrl?.[0] && (
+                    <a
+                      href={contactInfo.youtubeUrl[0]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-8 h-8 sm:w-9 sm:h-9 bg-red-600 text-white rounded flex items-center justify-center hover:bg-red-700 transition-colors"
+                    >
+                      <Youtube className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </a>
+                  )}
                 </div>
               </div>
             </div>
