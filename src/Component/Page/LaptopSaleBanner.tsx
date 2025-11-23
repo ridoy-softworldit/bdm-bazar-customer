@@ -15,7 +15,7 @@ const LaptopSaleBanner = () => {
 
   // ✅ Fetch settings from backend
   useEffect(() => {
-    fetch("http://localhost:5000/api/v1/settings")
+    fetch(`${process.env.NEXT_PUBLIC_BASE_API}/settings`)
       .then((res) => res.json())
       .then((data) => {
         setSettings(data?.data);

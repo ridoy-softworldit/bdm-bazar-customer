@@ -15,7 +15,7 @@ export default function useSettings() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/v1/settings");
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/settings`);
         if (!res.ok) throw new Error("Failed to fetch settings");
 
         const data = await res.json();

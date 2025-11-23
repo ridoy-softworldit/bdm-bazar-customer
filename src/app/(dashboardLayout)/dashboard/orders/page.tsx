@@ -52,7 +52,7 @@ export default function MyOrdersTable() {
     }
     setLoading(true);
 
-    fetch(`http://localhost:5000/api/v1/order/my-order/${user.id}`)
+    fetch(`${process.env.NEXT_PUBLIC_BASE_API}/order/my-order/${user.id}`)
       .then((res) => res.json())
       .then((data) => {
         if (data?.success) {
@@ -93,7 +93,7 @@ export default function MyOrdersTable() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/v1/order/track/${searchTerm.trim()}`
+        `${process.env.NEXT_PUBLIC_BASE_API}/order/track/${searchTerm.trim()}`
       );
       const data = await response.json();
 

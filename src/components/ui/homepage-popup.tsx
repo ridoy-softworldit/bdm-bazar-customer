@@ -9,7 +9,7 @@ export default function HomepagePopup() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/v1/settings")
+    fetch(`${process.env.NEXT_PUBLIC_BASE_API}/settings`)
       .then((res) => res.json())
       .then((data) => {
         const settingsData = data?.data;
