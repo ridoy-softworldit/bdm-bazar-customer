@@ -1,0 +1,74 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+
+import { useRegisterUserMutation } from "@/redux/featured/auth/authApi";
+import { getSession, signIn } from "next-auth/react";
+import toast from "react-hot-toast";
+import { setUser } from "@/redux/featured/auth/authSlice";
+import { useAppDispatch } from "@/redux/hooks";
+
+export function useAuthHandlers() {
+  const dispatch = useAppDispatch();
+  const [registerUser] = useRegisterUserMutation();
+
+  const handleRegister = async (data: {
+    name?: string;
+    email: string;
+    password: string;
+  }) => {
+    try {
+      const res = await registerUser(data).unwrap();
+      
+      toast.success("Registration successful!");
+    } catch (err: any) {
+      const message =
+        err?.data?.message ||
+        err?.error ||
+        err?.message ||
+        "Registration failed";
+      toast.error(message);
+      throw new Error(message);
+    }
+  };
+
+  // Updated: Accept provider ("credentials" | "google")
+  const handleLogin = async (
+    data: { email: string; password?: string },
+    provider: "credentials" | "google" = "credentials"
+  ) => {
+    try {
+      const res = await signIn(provider, {
+        redirect: false,
+        ...(provider === "credentials"
+          ? { email: data.email, password: data.password }
+          : { callbackUrl: "/" }),
+      });
+
+ 
+
+      if (!res?.ok) {
+        toast.error("Login failed");
+        throw new Error("Login failed");
+      }
+
+      // Get fresh session
+      const session = await getSession();
+      if (!session?.user) {
+        toast.error("Session not found after login");
+        throw new Error("Session missing");
+      }
+
+      // Dispatch user to Redux
+      dispatch(setUser(session.user));
+      toast.success("Login successful!");
+
+      return session;
+    } catch (err: any) {
+      console.error("Login error:", err);
+      toast.error(err.message || "Login failed");
+      throw err;
+    }
+  };
+
+  return { handleRegister, handleLogin };
+}
