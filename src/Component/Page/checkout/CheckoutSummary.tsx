@@ -16,7 +16,7 @@ export default function CheckoutSummary({
   deliveryCharge,
   onConfirm,
 }: CheckoutSummaryProps) {
-  const payableTotal = subtotal + deliveryCharge;
+  const payableTotal = subtotal + (deliveryCharge || 0);
   const rewardPoints = Math.floor(subtotal / 10);
 
   return (
@@ -35,17 +35,17 @@ export default function CheckoutSummary({
           <span className="text-gray-600">
             Delivery & Website Service Charge
           </span>
-          <span>{deliveryCharge.toLocaleString()} TK.</span>
+          <span>{deliveryCharge?.toLocaleString() || 0} TK.</span>
         </div>
 
         <div className="flex justify-between border-t border-dashed pt-3">
           <span className="text-gray-600">Total</span>
-          <span>{payableTotal.toLocaleString()} TK.</span>
+          <span>{payableTotal?.toLocaleString() || 0} TK.</span>
         </div>
 
         <div className="border-t border-dashed pt-3 mt-3 flex justify-between font-bold">
           <span>Payable Total</span>
-          <span>{payableTotal.toLocaleString()} TK.</span>
+          <span>{payableTotal?.toLocaleString() || 0} TK.</span>
         </div>
       </div>
 
@@ -72,7 +72,7 @@ export default function CheckoutSummary({
           onClick={onConfirm}
           className="mt-6 w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg text-lg transition-colors"
         >
-          অর্ডার নিশ্চিত করুন ৳{payableTotal.toLocaleString()}
+          অর্ডার নিশ্চিত করুন ৳{payableTotal?.toLocaleString() || 0}
         </button>
       )}
 

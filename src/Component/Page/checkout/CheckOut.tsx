@@ -150,14 +150,18 @@ const CheckOut: React.FC = () => {
   const { settings } = useSettings();
   const [deliveryCharge, setDeliveryCharge] = useState<number>(0);
 
-  // Courier pricing with accurate rates
-  const courierPrices: { [key: string]: { dhaka: number; outside: number } } = {
-    steadfast: { dhaka: 60, outside: 120 },
-    pathao: { dhaka: 49, outside: 99 },
-    redx: { dhaka: 60, outside: 120 },
-    sundarban: { dhaka: 70, outside: 130 },
-    paperfly: { dhaka: 65, outside: 120 }
+  // Get courier pricing from settings API
+  const getCourierPrices = () => {
+    const { insideDhaka, outsideDhaka } = settings?.data?.deliveryCharge || {};
+    return {
+      steadfast: { dhaka: insideDhaka?.steadfast, outside: outsideDhaka?.steadfast },
+      pathao: { dhaka: insideDhaka?.pathao, outside: outsideDhaka?.pathao },
+      redx: { dhaka: insideDhaka?.redx, outside: outsideDhaka?.redx },
+      sundarban: { dhaka: insideDhaka?.sundarban, outside: outsideDhaka?.sundarban },
+    };
   };
+  
+  const courierPrices = getCourierPrices();
 
   // Watch for address and courier change
   useEffect(() => {
@@ -166,10 +170,10 @@ const CheckOut: React.FC = () => {
       return;
     }
 
-    const rates = courierPrices[selectedCourier] || { dhaka: 60, outside: 120 };
+    const rates = courierPrices[selectedCourier as keyof typeof courierPrices];
     const finalPrice = customerInfo.city.toLowerCase() === "dhaka" ? rates.dhaka : rates.outside;
     setDeliveryCharge(finalPrice);
-  }, [customerInfo.city, selectedCourier]);
+  }, [customerInfo.city, selectedCourier, settings]);
 
   const tax = 10;
   const discount = 5;
@@ -200,16 +204,20 @@ const CheckOut: React.FC = () => {
         quantity: item.quantity,
         totalAmount: {
           subTotal: itemSubtotal,
-          tax,
+          tax: 0,
           shipping: {
             name: selectedCourier,
             type: "amount" as const,
+            amount: deliveryCharge,
           },
-          discount,
-          total: itemSubtotal + deliveryCharge,
-          delivery: deliveryCharge,
+          discount: 0,
+          total: itemSubtotal,
         },
-        courier: selectedCourier,
+        deliveryInfo: {
+          courier: selectedCourier,
+          charge: deliveryCharge,
+          city: customerInfo.city,
+        },
       };
     });
 
@@ -229,10 +237,7 @@ const CheckOut: React.FC = () => {
         zone: customerInfo.city || "Dhaka", // ✅ Added (using city as zone, adjust as needed)
       },
       paymentInfo: "cash-on" as const,
-      totalAmount: orderInfo.reduce(
-        (acc: number, item) => acc + item.totalAmount.total,
-        0
-      ),
+      totalAmount: subtotal + deliveryCharge,
     };
 
     const result = createOrderZodSchema.safeParse(payload);

@@ -1,12 +1,13 @@
 "use client";
 
 import { Truck, Clock, Shield } from "lucide-react";
+import useSettings from "@/hooks/useSettings";
 
 interface CourierOption {
   id: string;
   name: string;
   deliveryTime: string;
-  price: number;
+  price: number | undefined;
   description: string;
   icon: React.ReactNode;
 }
@@ -17,12 +18,29 @@ interface CourierSelectionProps {
   city: string;
 }
 
-const courierOptions: CourierOption[] = [
+interface SettingsData {
+  deliveryCharge?: {
+    insideDhaka?: {
+      steadfast?: number;
+      pathao?: number;
+      redx?: number;
+      sundarban?: number;
+    };
+    outsideDhaka?: {
+      steadfast?: number;
+      pathao?: number;
+      redx?: number;
+      sundarban?: number;
+    };
+  };
+}
+
+const getCourierOptions = (settings: SettingsData): CourierOption[] => [
   {
     id: "steadfast",
     name: "Steadfast Courier",
     deliveryTime: "1-2 days",
-    price: 60,
+    price: settings?.deliveryCharge?.insideDhaka?.steadfast,
     description: "Fast and reliable delivery service",
     icon: <Truck className="w-5 h-5" />
   },
@@ -30,7 +48,7 @@ const courierOptions: CourierOption[] = [
     id: "pathao",
     name: "Pathao Courier",
     deliveryTime: "1-3 days", 
-    price: 70,
+    price: settings?.deliveryCharge?.insideDhaka?.pathao,
     description: "Quick delivery with tracking",
     icon: <Clock className="w-5 h-5" />
   },
@@ -38,7 +56,7 @@ const courierOptions: CourierOption[] = [
     id: "redx",
     name: "RedX Courier",
     deliveryTime: "2-4 days",
-    price: 50,
+    price: settings?.deliveryCharge?.insideDhaka?.redx,
     description: "Affordable nationwide delivery",
     icon: <Shield className="w-5 h-5" />
   },
@@ -46,7 +64,7 @@ const courierOptions: CourierOption[] = [
     id: "sundarban",
     name: "Sundarban Courier",
     deliveryTime: "3-5 days",
-    price: 80,
+    price: settings?.deliveryCharge?.insideDhaka?.sundarban,
     description: "Secure delivery service",
     icon: <Truck className="w-5 h-5" />
   }
@@ -57,9 +75,16 @@ export default function CourierSelection({
   onCourierChange,
   city
 }: CourierSelectionProps) {
+  const { settings } = useSettings();
+  const courierOptions = getCourierOptions(settings?.data);
   
-  const getDeliveryPrice = (basePrice: number) => {
-    return city.toLowerCase() === "dhaka" ? basePrice : basePrice + 20;
+  const getDeliveryPrice = (courier: CourierOption) => {
+    if (city.toLowerCase() === "dhaka") {
+      return courier.price;
+    }
+    // Get outside Dhaka price from settings
+    const outsidePrice = settings?.data?.deliveryCharge?.outsideDhaka?.[courier.id as keyof typeof settings.data.deliveryCharge.outsideDhaka];
+    return outsidePrice;
   };
 
   return (
@@ -69,7 +94,7 @@ export default function CourierSelection({
       
       <div className="space-y-3">
         {courierOptions.map((courier) => {
-          const deliveryPrice = getDeliveryPrice(courier.price);
+          const deliveryPrice = getDeliveryPrice(courier);
           
           return (
             <div

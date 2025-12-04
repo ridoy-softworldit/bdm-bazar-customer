@@ -14,7 +14,11 @@ const nextConfig = {
       "placehold.co",
       "img.freepik.com",
       "example.com",
+      "upload.wikimedia.org",
     ],
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    minimumCacheTTL: 60,
   },
 };
 

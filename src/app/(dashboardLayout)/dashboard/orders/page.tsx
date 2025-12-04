@@ -3,7 +3,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { selectCurrentUser } from "@/redux/featured/auth/authSlice";
 import { useAppSelector } from "@/redux/hooks";
@@ -41,6 +41,7 @@ export default function MyOrdersTable() {
   const [trackingError, setTrackingError] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [trackedOrder, setTrackedOrder] = useState<any | null>(null);
+  const [productDetails, setProductDetails] = useState<{[key: string]: any}>({});
 
   const user: any = useAppSelector(selectCurrentUser);
 
@@ -110,9 +111,39 @@ export default function MyOrdersTable() {
     }
   };
 
-  const handleViewOrder = (order: any) => {
+  const handleViewOrder = async (order: any) => {
     setSelectedOrder(order);
     setIsModalOpen(true);
+    
+    // Fetch product details for all items in the order
+    const productIds = order.orderInfo.map((item: any) => item.productInfo);
+    const uniqueProductIds = [...new Set(productIds)];
+    
+    const productPromises = uniqueProductIds.map(async (productId: unknown) => {
+      const id = productId as string;
+      if (!productDetails[id]) {
+        try {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/product/${id}`);
+          const data = await response.json();
+          if (data?.success) {
+            return { [id]: data.data };
+          }
+        } catch (err) {
+          console.error(`Error fetching product ${id}:`, err);
+        }
+      }
+      return null;
+    });
+    
+    const results = await Promise.all(productPromises);
+    const newProductDetails = results.reduce((acc, result) => {
+      if (result) {
+        return { ...acc, ...result };
+      }
+      return acc;
+    }, {});
+    
+    setProductDetails(prev => ({ ...prev, ...newProductDetails }));
   };
 
   // Non-logged-in user view (Track order)
@@ -220,7 +251,7 @@ export default function MyOrdersTable() {
                     </div>
                     <div className="flex justify-between text-lg font-bold text-gray-900 border-t pt-2">
                       <span>Total Amount:</span>
-                      <span>{trackedOrder.totalAmount} BDT</span>
+                      <span>৳{trackedOrder.totalAmount}</span>
                     </div>
                   </div>
                 </div>
@@ -253,10 +284,10 @@ export default function MyOrdersTable() {
                         <div className="flex gap-4 text-sm text-gray-600 mt-2">
                           <span>Qty: {item.quantity}</span>
                           <span>
-                            Price: ${item.productInfo?.productInfo?.price}
+                            Price: ৳{item.productInfo?.productInfo?.price}
                           </span>
                           <span className="font-medium">
-                            Subtotal: {item.totalAmount.subTotal} BDT
+                            Subtotal: ৳{item.totalAmount.subTotal}
                           </span>
                         </div>
                       </div>
@@ -336,7 +367,7 @@ export default function MyOrdersTable() {
                       </Badge>
                     </td>
                     <td className="py-4 px-6 font-medium">
-                      ${order.totalAmount}
+                      ৳{order.totalAmount}
                     </td>
                     <td className="py-4 px-6">
                       <Button
@@ -359,6 +390,7 @@ export default function MyOrdersTable() {
       {/* Modal for logged-in user */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-6 rounded-xl shadow-xl">
+          <DialogTitle className="sr-only">Order Details</DialogTitle>
           {selectedOrder && (
             <div className="space-y-6 pt-2">
               <div className="flex items-center justify-between gap-2">
@@ -397,7 +429,7 @@ export default function MyOrdersTable() {
                     </div>
                     <div className="flex justify-between text-gray-600">
                       <span>Total:</span>
-                      <span>${selectedOrder.totalAmount}</span>
+                      <span>৳{selectedOrder.totalAmount}</span>
                     </div>
                   </div>
                 </div>
@@ -408,7 +440,7 @@ export default function MyOrdersTable() {
                 <table className="w-full text-sm text-gray-600">
                   <thead>
                     <tr className="text-left border-b">
-                      <th className="py-2">Product ID</th>
+                      <th className="py-2">Product Name</th>
                       <th className="py-2">Qty</th>
                       <th className="py-2">Subtotal</th>
                     </tr>
@@ -416,9 +448,9 @@ export default function MyOrdersTable() {
                   <tbody>
                     {selectedOrder.orderInfo.map((item: any, i: number) => (
                       <tr key={i} className="border-b">
-                        <td className="py-2">{item.productInfo}</td>
+                        <td className="py-2">{productDetails[item.productInfo]?.description?.name || 'Loading...'}</td>
                         <td className="py-2">{item.quantity}</td>
-                        <td className="py-2">${item.totalAmount.subTotal}</td>
+                        <td className="py-2">৳{item.totalAmount.subTotal}</td>
                       </tr>
                     ))}
                   </tbody>

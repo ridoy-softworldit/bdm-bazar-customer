@@ -10,6 +10,7 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import LeftSide from "./LeftSide";
 import RightSide from "./RightSide";
+import useSettings from "@/hooks/useSettings";
 
 const CartPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -25,7 +26,9 @@ const CartPage: React.FC = () => {
     (acc, item) => acc + (item.originalPrice ?? 0) * item.quantity,
     0
   );
-  const deliveryCharge = 60;
+  const { settings } = useSettings();
+  // Use default Dhaka delivery charge from settings
+  const deliveryCharge = settings?.data?.deliveryCharge?.insideDhaka?.pathao;
   const payableTotal = subtotal + deliveryCharge;
 
   const allSelected = items.length > 0 && selectedItems.length === items.length;

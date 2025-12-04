@@ -73,13 +73,24 @@ const PopularAuthorsCarousel = () => {
                       <div className="absolute inset-0 bg-gradient-to-tr from-blue-500 via-purple-500 to-pink-500 rounded-full blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                       <div className="relative w-20 h-20 xs:w-24 xs:h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 mb-2 sm:mb-4 rounded-full overflow-hidden ring-2 sm:ring-4 ring-white shadow-lg sm:shadow-xl group-hover:shadow-2xl transition-all duration-300 bg-white p-0.5 sm:p-1">
                         <div className="w-full h-full rounded-full overflow-hidden">
-                          <Image
-                            src={author.image}
-                            alt={author.name}
-                            fill
-                            className="object-cover group-hover:scale-110 transition-transform duration-500"
-                            sizes="(max-width: 768px) 112px, (max-width: 1024px) 128px, 144px"
-                          />
+                          {author.image ? (
+                            <Image
+                              src={author.image}
+                              alt={author.name}
+                              fill
+                              className="object-cover group-hover:scale-110 transition-transform duration-500"
+                              sizes="(max-width: 768px) 112px, (max-width: 1024px) 128px, 144px"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                target.parentElement!.innerHTML = '<div class="w-full h-full bg-gray-200 flex items-center justify-center"><span class="text-gray-400 text-xs">No Image</span></div>';
+                              }}
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                              <span className="text-gray-400 text-xs">No Image</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
