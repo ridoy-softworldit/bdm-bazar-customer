@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { selectCurrentUser } from "@/redux/featured/auth/authSlice";
 import { useAppSelector } from "@/redux/hooks";
-import { Eye, Search, Package } from "lucide-react";
+import { Eye, Search } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 

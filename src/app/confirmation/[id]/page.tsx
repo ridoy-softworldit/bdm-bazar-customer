@@ -39,6 +39,7 @@ interface OrderData {
   orderInfo: OrderInfo[];
   customerInfo: CustomerInfo;
   paymentInfo: string;
+  deliveryCharge?: number;
   totalAmount: number;
   createdAt: string;
   updatedAt: string;
@@ -113,7 +114,7 @@ export default function OrderConfirmation() {
     );
   }
 
-  const { orderInfo, customerInfo, paymentInfo, totalAmount } = orderData;
+  const { orderInfo, customerInfo, paymentInfo, deliveryCharge, totalAmount } = orderData;
 
   // Calculate aggregate totals from all orderInfo items
   const aggregateTotals: TotalAmount = orderInfo.reduce(
@@ -136,8 +137,8 @@ export default function OrderConfirmation() {
     }
   );
 
-  // Calculate shipping cost: total = subTotal + tax + shipping - discount
-  const shippingCost = 60;
+  // Get delivery charge from order data
+  const shippingCost = deliveryCharge || 0;
 
   const paymentMethod =
     paymentInfo === "cash-on" ? "Cash On Delivery" : paymentInfo || "N/A";
@@ -251,9 +252,11 @@ export default function OrderConfirmation() {
                     Continue Shopping
                   </button>
                 </Link>
-                <button className="px-6 py-3 bg-cyan-500 text-white rounded hover:bg-cyan-600 transition-colors font-medium">
-                  Track Order
-                </button>
+                <Link href="/dashboard/orders">
+                  <button className="px-6 py-3 bg-cyan-500 text-white rounded hover:bg-cyan-600 transition-colors font-medium">
+                    Track Order
+                  </button>
+                </Link>
               </div>
             </div>
           </div>
@@ -275,7 +278,7 @@ export default function OrderConfirmation() {
                 </div>
                 <div className="border-t border-gray-200 pt-4 flex justify-between  text-gray-700">
                   <span>Total</span>
-                  <span>৳ {aggregateTotals.total}</span>
+                  <span>৳ {aggregateTotals.subTotal + shippingCost}</span>
                 </div>
                 <div className="flex justify-between font-bold text-gray-900">
                   <span>Payable</span>

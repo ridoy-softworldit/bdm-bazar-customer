@@ -76,6 +76,7 @@ const createOrderZodSchema = z.object({
   orderInfo: z.array(orderInfoZodSchema).min(1),
   customerInfo: customerInfoZodSchema,
   paymentInfo: paymentInfoZodSchema,
+  deliveryCharge: z.number().min(0, "Delivery charge cannot be negative"),
   totalAmount: z.number().min(0),
 });
 
@@ -171,8 +172,8 @@ const CheckOut: React.FC = () => {
     }
 
     const rates = courierPrices[selectedCourier as keyof typeof courierPrices];
-    const finalPrice = customerInfo.city.toLowerCase() === "dhaka" ? rates.dhaka : rates.outside;
-    setDeliveryCharge(finalPrice);
+    const finalPrice = customerInfo.city.toLowerCase() === "dhaka" ? rates?.dhaka : rates?.outside;
+    setDeliveryCharge(finalPrice || 0);
   }, [customerInfo.city, selectedCourier, settings]);
 
   const tax = 10;
@@ -237,6 +238,7 @@ const CheckOut: React.FC = () => {
         zone: customerInfo.city || "Dhaka", // ✅ Added (using city as zone, adjust as needed)
       },
       paymentInfo: "cash-on" as const,
+      deliveryCharge: deliveryCharge,
       totalAmount: subtotal + deliveryCharge,
     };
 
