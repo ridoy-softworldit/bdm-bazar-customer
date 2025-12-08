@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
+import { LayoutDashboard, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePathname } from "next/navigation";
 import DashboardSideber from "@/Component/Siderbar-dashbord/Dashbord-sideber";
@@ -39,13 +39,27 @@ export default function AccountLayout({ children }: AccountLayoutProps) {
 
   return (
     <div className="flex flex-col bg-gray-50 text-gray-800">
-      {/* 🟩 Header */}
+      {/* Mobile Menu Button */}
+      {showSidebar && (
+        <div className="lg:hidden sticky top-0 z-40 bg-white border-b px-4 py-3 flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setSidebarOpen(true)}
+            className="text-gray-700 flex items-center gap-2"
+          >
+            <LayoutDashboard className="h-5 w-5" />
+            <span className="text-sm font-medium">Manage Account</span>
+          </Button>
+        </div>
+      )}
 
-      {/* 🟪 Main Content Area */}
+      {/* Main Content Area */}
       <div className="flex flex-1 w-full max-w-7xl mx-auto relative py-6">
         {/* Desktop Sidebar */}
         {showSidebar && (
+          <div className="hidden lg:block">
             <DashboardSideber />
+          </div>
         )}
 
         {/* Mobile Sidebar Drawer */}

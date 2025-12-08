@@ -335,54 +335,93 @@ export default function MyOrdersTable() {
           ) : filteredOrders.length === 0 ? (
             <p className="text-center text-gray-500 py-10">No orders found.</p>
           ) : (
-            <table className="w-full border-separate border-spacing-y-2">
-              <thead>
-                <tr className="text-gray-500 uppercase text-sm tracking-wider">
-                  <th className="text-left py-3 px-6">Tracking ID</th>
-                  <th className="text-left py-3 px-6">Date</th>
-                  <th className="text-left py-3 px-6">Status</th>
-                  <th className="text-left py-3 px-6">Total</th>
-                  <th className="text-left py-3 px-6">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
+            <>
+              {/* Desktop Table */}
+              <table className="hidden md:table w-full border-separate border-spacing-y-2">
+                <thead>
+                  <tr className="text-gray-500 uppercase text-sm tracking-wider">
+                    <th className="text-left py-3 px-6">Tracking ID</th>
+                    <th className="text-left py-3 px-6">Date</th>
+                    <th className="text-left py-3 px-6">Status</th>
+                    <th className="text-left py-3 px-6">Total</th>
+                    <th className="text-left py-3 px-6">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredOrders.map((order: any) => (
+                    <tr
+                      key={order._id}
+                      className="bg-gray-50 rounded-lg hover:shadow-md transition-all duration-200"
+                    >
+                      <td className="py-4 px-6 font-medium">
+                        {order.orderInfo[0]?.trackingNumber}
+                      </td>
+                      <td className="py-4 px-6 text-gray-600">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="py-4 px-6">
+                        <Badge
+                          className={`rounded-full px-3 py-1 text-sm ${getStatusVariant(
+                            order.orderInfo[0]?.status
+                          )}`}
+                        >
+                          {order.orderInfo[0]?.status}
+                        </Badge>
+                      </td>
+                      <td className="py-4 px-6 font-medium">
+                        ৳{order.totalAmount}
+                      </td>
+                      <td className="py-4 px-6">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="rounded-lg bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100 hover:border-orange-300"
+                          onClick={() => handleViewOrder(order)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Mobile Cards */}
+              <div className="md:hidden space-y-3 p-4">
                 {filteredOrders.map((order: any) => (
-                  <tr
-                    key={order._id}
-                    className="bg-gray-50 rounded-lg hover:shadow-md transition-all duration-200"
-                  >
-                    <td className="py-4 px-6 font-medium">
-                      {order.orderInfo[0]?.trackingNumber}
-                    </td>
-                    <td className="py-4 px-6 text-gray-600">
-                      {new Date(order.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="py-4 px-6">
-                      <Badge
-                        className={`rounded-full px-3 py-1 text-sm ${getStatusVariant(
-                          order.orderInfo[0]?.status
-                        )}`}
-                      >
+                  <div key={order._id} className="bg-gray-50 rounded-lg p-4 space-y-3">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase">Tracking ID</p>
+                        <p className="font-medium text-sm">{order.orderInfo[0]?.trackingNumber}</p>
+                      </div>
+                      <Badge className={`rounded-full px-2 py-1 text-xs ${getStatusVariant(order.orderInfo[0]?.status)}`}>
                         {order.orderInfo[0]?.status}
                       </Badge>
-                    </td>
-                    <td className="py-4 px-6 font-medium">
-                      ৳{order.totalAmount}
-                    </td>
-                    <td className="py-4 px-6">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="rounded-lg bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100 hover:border-orange-300"
-                        onClick={() => handleViewOrder(order)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </td>
-                  </tr>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <div>
+                        <p className="text-xs text-gray-500">Date</p>
+                        <p className="text-gray-700">{new Date(order.createdAt).toLocaleDateString()}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-gray-500">Total</p>
+                        <p className="font-medium">৳{order.totalAmount}</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full rounded-lg bg-orange-50 border-orange-200 text-orange-700"
+                      onClick={() => handleViewOrder(order)}
+                    >
+                      <Eye className="h-4 w-4 mr-2" />
+                      View Details
+                    </Button>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            </>
           )}
         </div>
       </div>
@@ -402,8 +441,8 @@ export default function MyOrdersTable() {
                 </span>
               </div>
 
-              <div className="flex gap-4 justify-between">
-                <div className="bg-gray-50 w-[60%] p-4 rounded-lg shadow-inner">
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="bg-gray-50 md:w-[60%] p-4 rounded-lg shadow-inner">
                   <h3 className="font-medium text-gray-900 mb-2">
                     Shipping Information
                   </h3>
@@ -419,7 +458,7 @@ export default function MyOrdersTable() {
                   </div>
                 </div>
 
-                <div className="bg-gray-50 w-[40%] p-4 rounded-lg shadow-inner">
+                <div className="bg-gray-50 md:w-[40%] p-4 rounded-lg shadow-inner">
                   <h3 className="font-medium text-gray-900 mb-2">
                     Payment Information
                   </h3>
@@ -437,24 +476,26 @@ export default function MyOrdersTable() {
 
               <div className="bg-gray-50 p-4 rounded-lg shadow-inner">
                 <h3 className="font-medium text-gray-900 mb-2">Items</h3>
-                <table className="w-full text-sm text-gray-600">
-                  <thead>
-                    <tr className="text-left border-b">
-                      <th className="py-2">Product Name</th>
-                      <th className="py-2">Qty</th>
-                      <th className="py-2">Subtotal</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selectedOrder.orderInfo.map((item: any, i: number) => (
-                      <tr key={i} className="border-b">
-                        <td className="py-2">{productDetails[item.productInfo]?.description?.name || 'Loading...'}</td>
-                        <td className="py-2">{item.quantity}</td>
-                        <td className="py-2">৳{item.totalAmount.subTotal}</td>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-gray-600">
+                    <thead>
+                      <tr className="text-left border-b">
+                        <th className="py-2">Product Name</th>
+                        <th className="py-2">Qty</th>
+                        <th className="py-2">Subtotal</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {selectedOrder.orderInfo.map((item: any, i: number) => (
+                        <tr key={i} className="border-b">
+                          <td className="py-2">{productDetails[item.productInfo]?.description?.name || 'Loading...'}</td>
+                          <td className="py-2">{item.quantity}</td>
+                          <td className="py-2">৳{item.totalAmount.subTotal}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
               <div className="flex gap-3 pt-2">

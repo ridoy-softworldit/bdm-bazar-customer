@@ -38,12 +38,12 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
   const userImage = currentUser?.image;
 
   return (
-    <Card className="md:w-72 bg-white border-0 rounded-md overflow-hidden shadow-sm">
+    <Card className="w-full lg:w-72 bg-white border-0 rounded-md overflow-hidden shadow-sm">
       <CardContent className="p-0">
         {/* User Info */}
         <div className="relative bg-gradient-to-br from-[#1897CE] via-[#1cb5e0] to-[#0ea5e9] p-8 text-white overflow-hidden">
           <div className="absolute inset-0 bg-white/5 opacity-30"></div>
-          <div className="relative flex  sm:flex-nowrap items-center gap-3 sm:gap-5">
+          <div className="relative flex flex-nowrap items-center gap-3 sm:gap-5">
             {/* Avatar */}
             <div className="relative flex-shrink-0">
               <Avatar className="w-16 h-16 border-3 border-white/30 ring-2 ring-white/20">
@@ -63,11 +63,11 @@ export default function DashboardSidebar({ onClose }: DashboardSidebarProps) {
 
             {/* User Info */}
             <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-xl tracking-tight mb-1 truncate">
+              <h3 className="font-bold text-base sm:text-xl tracking-tight mb-1 truncate">
                 {userName}
               </h3>
               <p
-                className="text-white/90 text-sm font-medium break-words sm:truncate"
+                className="text-white/90 text-xs sm:text-sm font-medium truncate"
                 title={userEmail}
               >
                 {userEmail}
