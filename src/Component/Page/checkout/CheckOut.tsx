@@ -12,7 +12,6 @@ import CheckoutSummary from "./CheckoutSummary";
 import PaymentMethod from "./PaymentMethod";
 import ShippingAddress, { CustomerInfo } from "./ShippingAddress";
 import CheckoutOptions from "./CheckoutOptions";
-import CourierSelection from "./CourierSelection";
 import useSettings from "@/hooks/useSettings";
 
 // Zod Schema
@@ -141,7 +140,7 @@ const CheckOut: React.FC = () => {
   const [selectedPayment, setSelectedPayment] = useState<
     "cash-on-delivery" | "bkash" | "nagad" | "rocket"
   >("cash-on-delivery");
-  const [selectedCourier, setSelectedCourier] = useState<string>("pathao");
+
   const [errors, setErrors] = useState<string[]>([]);
 
   const subtotal: number = items.reduce(
@@ -151,30 +150,21 @@ const CheckOut: React.FC = () => {
   const { settings } = useSettings();
   const [deliveryCharge, setDeliveryCharge] = useState<number>(0);
 
-  // Get courier pricing from settings API
-  const getCourierPrices = () => {
-    const { insideDhaka, outsideDhaka } = settings?.data?.deliveryCharge || {};
-    return {
-      steadfast: { dhaka: insideDhaka?.steadfast, outside: outsideDhaka?.steadfast },
-      pathao: { dhaka: insideDhaka?.pathao, outside: outsideDhaka?.pathao },
-      redx: { dhaka: insideDhaka?.redx, outside: outsideDhaka?.redx },
-      sundarban: { dhaka: insideDhaka?.sundarban, outside: outsideDhaka?.sundarban },
-    };
-  };
-  
-  const courierPrices = getCourierPrices();
 
-  // Watch for address and courier change
+
+  // Watch for address change
   useEffect(() => {
-    if (!customerInfo.city || !selectedCourier) {
+    if (!customerInfo.city) {
       setDeliveryCharge(0);
       return;
     }
 
-    const rates = courierPrices[selectedCourier as keyof typeof courierPrices];
-    const finalPrice = customerInfo.city.toLowerCase() === "dhaka" ? rates?.dhaka : rates?.outside;
+    const { insideDhaka, outsideDhaka } = settings?.data?.deliveryCharge || {};
+    const finalPrice = customerInfo.city.toLowerCase() === "dhaka" 
+      ? insideDhaka 
+      : outsideDhaka;
     setDeliveryCharge(finalPrice || 0);
-  }, [customerInfo.city, selectedCourier, settings]);
+  }, [customerInfo.city, settings]);
 
   const tax = 10;
   const discount = 5;
@@ -207,17 +197,11 @@ const CheckOut: React.FC = () => {
           subTotal: itemSubtotal,
           tax: 0,
           shipping: {
-            name: selectedCourier,
+            name: "Standard Delivery",
             type: "amount" as const,
-            amount: deliveryCharge,
           },
           discount: 0,
           total: itemSubtotal,
-        },
-        deliveryInfo: {
-          courier: selectedCourier,
-          charge: deliveryCharge,
-          city: customerInfo.city,
         },
       };
     });
@@ -366,11 +350,7 @@ const CheckOut: React.FC = () => {
               setCustomerInfo={setCustomerInfo}
               isGuestCheckout={checkoutType === "guest"}
             />
-            <CourierSelection
-              selectedCourier={selectedCourier}
-              onCourierChange={setSelectedCourier}
-              city={customerInfo.city}
-            />
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-gray-200 rounded-lg overflow-hidden border border-gray-200">
               <div className="bg-white p-4 flex items-center space-x-3">
                 <CalendarIcon />

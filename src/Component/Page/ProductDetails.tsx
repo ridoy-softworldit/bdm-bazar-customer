@@ -103,6 +103,33 @@ export default function ProductDetails({
     );
   };
 
+  const handleShare = async () => {
+    const shareData = {
+      title: `${title} by ${author}`,
+      text: `Check out this book: ${title} by ${author} - Only TK. ${price}`,
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback: copy to clipboard
+        await navigator.clipboard.writeText(`${shareData.title}\n${shareData.text}\n${shareData.url}`);
+        alert('Link copied to clipboard!');
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+      // Final fallback: copy URL only
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        alert('Link copied to clipboard!');
+      } catch (clipboardError) {
+        console.error('Clipboard error:', clipboardError);
+      }
+    }
+  };
+
   const truncateText = (text: string, maxLength: number = 150) => {
     if (!text) return "";
     if (text.length <= maxLength) return text;
@@ -237,8 +264,8 @@ export default function ProductDetails({
         {/* Offer Notices */}
         <OfferNotices
           items={[
-            "৬০% পর্যন্ত ছাড় বাংলা-ইংরেজিশ স্টকে থাকা বিদেশি বইয়ে!",
-            "৫% এক্সট্রা ছাড় (SUPER5 কোডে) ও ন্যূনতম ৩০০৳ গিফট ভাউচার ৫০০৳+ অর্ডারে!",
+            "৬০% পর্যন্ত ছাড় বাংলা-ইংরেজি স্টকে থাকা বিদেশি বইয়ে!",
+            // "৫% এক্সট্রা ছাড় (SUPER5 কোডে) ও ন্যূনতম ৩০০৳ গিফট ভাউচার ৫০০৳+ অর্ডারে!",
           ]}
         />
 
@@ -278,7 +305,10 @@ export default function ProductDetails({
               />
               Add to Wishlist
             </button>
-            <button className="flex items-center gap-2 text-gray-600 hover:text-blue-500 text-sm">
+            <button 
+              onClick={handleShare}
+              className="flex items-center gap-2 text-gray-600 hover:text-blue-500 text-sm transition-colors"
+            >
               <Share2 className="w-4 h-4" />
               Share
             </button>
@@ -291,7 +321,7 @@ export default function ProductDetails({
         <div className="fixed inset-0 backdrop-blur-xs bg-white/30 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
             <div className="flex justify-between items-center p-4 border-b">
-              <h3 className="text-lg font-semibold">Look Inside: {title}</h3>
+              <h3 className="text-lg font-semibold">একটু পড়ে দেখুন: {title}</h3>
               <button
                 onClick={() => {
                   if (onPreviewClose) {

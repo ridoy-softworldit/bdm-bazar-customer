@@ -1,175 +1,148 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
 import Image from "next/image";
+import Link from "next/link";
+import { Star, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useGetPopularProductsQuery } from "@/redux/featured/product/productApi";
+import { useAppDispatch } from "@/redux/hooks";
+import { handleAddToCart } from "./useHandleAddtocart";
+import { useState } from "react";
 
-// --- TYPE DEFINITION ---
-interface Product {
-  id: number;
-  title: string;
-  author: string;
-  imageUrl: string;
-  discount: number;
-  rating: number;
-  reviews: number;
-  inStock: boolean;
-  originalPrice: number;
-  discountedPrice: number;
-  tagText?: string;
-}
+const ProductCard = ({ product }: { product: any }) => {
+  const dispatch = useAppDispatch();
+  const [addedItems, setAddedItems] = useState<Set<string>>(new Set());
 
-// --- MOCK DATA ---
-const products: Product[] = [
-  {
-    id: 7,
-    title: "ইলিশ কিনবো গল্পের ঝুলি নিয়ে (বুক-১-৩)",
-    author: "সাইফুর রহমান খান",
-    imageUrl: "https://placehold.co/300x450/EAE9E5/333333?text=Book+Cover",
-    discount: 30,
-    rating: 5,
-    reviews: 5,
-    inStock: true,
-    originalPrice: 360,
-    discountedPrice: 252,
-    tagText: "স্টক আউট",
-  },
-  {
-    id: 8,
-    title: "না বলার কৌশল",
-    author: "আশরাফি তুশহার",
-    imageUrl: "https://placehold.co/300x450/EAE9E5/333333?text=Book+Cover",
-    discount: 20,
-    rating: 5,
-    reviews: 1,
-    inStock: true,
-    originalPrice: 400,
-    discountedPrice: 320,
-    tagText: "স্টক আউট",
-  },
-  {
-    id: 9,
-    title: "$100 M অফার",
-    author: "এলেক্স হরমোজি",
-    imageUrl: "https://placehold.co/300x450/EAE9E5/333333?text=Book+Cover",
-    discount: 14,
-    rating: 0,
-    reviews: 0,
-    inStock: true,
-    originalPrice: 340,
-    discountedPrice: 292,
-  },
-  {
-    id: 10,
-    title: "একা থাকতে শিখুন",
-    author: "আশরাফি তুশহার",
-    imageUrl: "https://placehold.co/300x450/EAE9E5/333333?text=Book+Cover",
-    discount: 20,
-    rating: 5,
-    reviews: 3,
-    inStock: true,
-    originalPrice: 400,
-    discountedPrice: 320,
-    tagText: "স্টক আউট",
-  },
-];
+  const handleAddToCartWithAnimation = (product: any) => {
+    handleAddToCart(product, dispatch);
+    setAddedItems(prev => new Set(prev).add(product._id));
+    setTimeout(() => {
+      setAddedItems(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(product._id);
+        return newSet;
+      });
+    }, 2000);
+  };
 
-// --- SVG ICONS ---
-const StarIcon = ({ filled }: { filled: boolean }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill={filled ? "#FBBF24" : "none"}
-    stroke={filled ? "#FBBF24" : "#D1D5DB"}
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-  </svg>
-);
-const DiscountBadge = ({ discount }: { discount: number }) => {
-  if (discount <= 0) return null;
+  const discount = product.productInfo.salePrice 
+    ? Math.round(((product.productInfo.price - product.productInfo.salePrice) / product.productInfo.price) * 100)
+    : 0;
 
   return (
-    <div className="absolute top-[-5px] left-[-5px] z-10 w-16 h-16">
-      <svg viewBox="0 0 100 100" className="w-full h-full">
-        <path
-          d="M 50,0 L 65,15 L 85,15 L 85,35 L 100,50 L 85,65 L 85,85 L 65,85 L 50,100 L 35,85 L 15,85 L 15,65 L 0,50 L 15,35 L 15,15 L 35,15 Z"
-          fill="#EF4444"
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-white font-bold leading-tight">
-        <span className="text-xl">{discount}%</span>
-        <span className="text-sm">OFF</span>
-      </div>
-    </div>
-  );
-};
-
-const ProductCard = ({ product }: { product: Product }) => {
-  return (
-    <div className="group w-full max-w-sm mx-auto font-sans  border border-transparent hover:border-gray-200 transition-all duration-300">
-      <div className="relative overflow-hidden  p-4">
-        <DiscountBadge discount={product.discount} />
+    <div className="group w-full max-w-sm mx-auto font-sans border border-transparent hover:border-gray-200 transition-all duration-300">
+      <div className="relative overflow-hidden p-4">
+        {discount > 0 && (
+          <div className="absolute top-[-5px] left-[-5px] z-10 w-16 h-16">
+            <svg viewBox="0 0 100 100" className="w-full h-full">
+              <path d="M 50,0 L 65,15 L 85,15 L 85,35 L 100,50 L 85,65 L 85,85 L 65,85 L 50,100 L 35,85 L 15,85 L 15,65 L 0,50 L 15,35 L 15,15 L 35,15 Z" fill="#EF4444" />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-white font-bold leading-tight">
+              <span className="text-xl">{discount}%</span>
+              <span className="text-sm">OFF</span>
+            </div>
+          </div>
+        )}
         <Image
-          src={product.imageUrl}
-          alt={product.title}
+          src={product.featuredImg}
+          alt={product.description.name}
           className="w-full h-auto aspect-[2/3] object-cover"
           height={372}
           width={248}
         />
-        {product.tagText && (
+        {!product.productInfo.inStock && (
           <div className="absolute bottom-5 -right-10 transform rotate-[-45deg] bg-[#16a34a] text-white text-xs px-10 py-1 font-semibold">
-            {product.tagText}
+            স্টক আউট
           </div>
         )}
         <div className="absolute inset-0 hover:bg-[#00000044] bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300 flex items-center justify-center">
-          <button className="bg-[#009FDA] text-white px-8 py-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-lg font-semibold cursor-pointer">
-            Add to Cart
-          </button>
+          <Button
+            variant={addedItems.has(product._id) ? "default" : "secondary"}
+            className={`px-8 py-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-lg font-semibold cursor-pointer ${
+              addedItems.has(product._id) ? "bg-green-500 hover:bg-green-600 text-white" : "bg-[#009FDA] text-white"
+            }`}
+            onClick={(e) => {
+              e.preventDefault();
+              handleAddToCartWithAnimation(product);
+            }}
+          >
+            {addedItems.has(product._id) ? (
+              <><Check className="w-4 h-4 mr-1 inline" />Added!</>
+            ) : (
+              "Add to Cart"
+            )}
+          </Button>
         </div>
       </div>
       <div className="p-4 text-center">
-        <h3 className="text-md text-[#333333] max-[640px]:text-sm">
-          {product.title}
-        </h3>
-        <p className="text-sm text-gray-500 mt-1">{product.author}</p>
+        <Link href={`/product/${product._id}`}>
+          <h3 className="text-md text-[#333333] max-[640px]:text-sm hover:text-[#009FDA] cursor-pointer">
+            {product.description.name}
+          </h3>
+        </Link>
+        <p className="text-sm text-gray-500 mt-1">
+          {product?.bookInfo?.specification?.authors?.[0]?.name || product?.categoryAndTags?.publisher || "Brand/Publisher"}
+        </p>
         <div className="flex justify-center items-center mt-2 space-x-1">
           {[...Array(5)].map((_, i) => (
-            <StarIcon key={i} filled={i < product.rating} />
+            <Star key={i} size={16} className={i < Math.round(product.averageRating) ? "text-yellow-500 fill-yellow-500" : "text-gray-300"} />
           ))}
-          <span className="text-sm text-gray-400">({product.reviews})</span>
+          <span className="text-sm text-gray-400">({product.reviewCount})</span>
         </div>
-        {product.inStock && (
+        {product.productInfo.inStock && (
           <p className="text-sm max-[640px]:text-xs text-[#16a34a] font-semibold mt-2">
             Product in Stock
           </p>
         )}
         <div className="mt-2 flex justify-center items-baseline space-x-2">
-          {product.originalPrice > 0 &&
-            product.originalPrice !== product.discountedPrice && (
-              <p className="text-md max-[640px]:text-sm text-gray-400 line-through">
-                TK. {product.originalPrice.toLocaleString("en-IN")}
-              </p>
-            )}
+          {product.productInfo.salePrice && (
+            <p className="text-md max-[640px]:text-sm text-gray-400 line-through">
+              TK. {product.productInfo.price.toLocaleString("en-IN")}
+            </p>
+          )}
           <p className="text-lg max-[640px]:text-xs font-bold text-[#f57224]">
-            TK. {product.discountedPrice.toLocaleString("en-IN")}
+            TK. {(product.productInfo.salePrice || product.productInfo.price).toLocaleString("en-IN")}
           </p>
         </div>
       </div>
     </div>
   );
 };
+
 export default function PopularProducts() {
+  const { data: popularProductsData, isLoading } = useGetPopularProductsQuery("");
+  const popularProducts = popularProductsData?.data || [];
+
+  if (isLoading) {
+    return (
+      <div className="p-4 bg-[#F8F8F8] sm:p-6 lg:p-8">
+        <div className="max-w-6xl mx-auto bg-white p-6 rounded-md shadow-2xl">
+          <div className="h-8 w-48 bg-gray-200 rounded animate-pulse mb-6"></div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="space-y-2">
+                <div className="w-full h-64 bg-gray-200 rounded animate-pulse"></div>
+                <div className="h-3 bg-gray-300 rounded mb-2"></div>
+                <div className="h-4 bg-gray-300 rounded"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!popularProducts.length) return null;
+
   return (
     <div className="p-4 bg-[#F8F8F8] sm:p-6 lg:p-8">
       <div className="max-w-6xl mx-auto bg-white p-6 rounded-md shadow-2xl">
         <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-          এখন যা জনপ্রিয়
+          এখন যা জনপ্রিয়
         </h2>
-
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
+          {popularProducts.slice(0, 10).map((product: any) => (
+            <ProductCard key={product._id} product={product} />
           ))}
         </div>
       </div>

@@ -42,7 +42,7 @@ export default function BookCoverCard({ book, onPreviewClick }: BookCoverCardPro
         </CardContent>
       </Card>
 
-      {/* Look Inside Button */}
+      {/* একটু পড়ে দেখুন Button */}
       {book.previewImg && book.previewImg.length > 0 && (
         <Button
           onClick={onPreviewClick}
@@ -50,7 +50,7 @@ export default function BookCoverCard({ book, onPreviewClick }: BookCoverCardPro
           className="w-full gap-2 border-blue-600 text-blue-600 hover:bg-blue-50"
         >
           <Eye className="w-4 h-4" />
-          Look Inside
+          একটু পড়ে দেখুন
         </Button>
       )}
 
