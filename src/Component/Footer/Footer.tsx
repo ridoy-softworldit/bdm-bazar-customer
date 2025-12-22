@@ -35,13 +35,24 @@ export default function BengaliFooter() {
               <div>
                 <p className="font-semibold mb-1 sm:mb-2">Customer Care</p>
                 <p className="mb-1">
-                  Contact us at <span className="text-blue-600">Live Chat</span>
+                  Contact us at{" "}
+                  <a
+                    href={contactInfo?.whatsappLink?.[0] || `https://wa.me/${contactInfo?.phone?.replace(/\D/g, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline cursor-pointer"
+                  >
+                    Live Chat
+                  </a>
                 </p>
                 <p>
                   Send us an email:{" "}
-                  <span className="text-blue-600 break-all">
+                  <a
+                    href={`mailto:${contactInfo?.email}`}
+                    className="text-blue-600 break-all hover:underline"
+                  >
                     {contactInfo?.email}
-                  </span>
+                  </a>
                 </p>
               </div>
 
@@ -52,12 +63,22 @@ export default function BengaliFooter() {
                 <div className="min-w-0 flex-1">
                   <p className="mb-1">
                     Corporate Sales:{" "}
-                    <span className="font-semibold">{contactInfo?.phone}</span>{" "}
+                    <a
+                      href={contactInfo?.whatsappLink?.[0] || `https://wa.me/${contactInfo?.phone?.replace(/\D/g, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold hover:underline"
+                    >
+                      {contactInfo?.phone}
+                    </a>{" "}
                     (Whatsapp Message)
                   </p>
-                  <p className="text-blue-600 break-all mb-1">
+                  <a
+                    href={`mailto:${contactInfo?.email}`}
+                    className="text-blue-600 break-all mb-1 hover:underline inline-block"
+                  >
                     {contactInfo?.email}
-                  </p>
+                  </a>
                 </div>
               </div>
 
@@ -81,9 +102,12 @@ export default function BengaliFooter() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="mb-1">Email Us</p>
-                  <p className="text-blue-600 break-all">
+                  <a
+                    href={`mailto:${contactInfo?.email || "admin@bdmbazar.com"}`}
+                    className="text-blue-600 break-all hover:underline inline-block"
+                  >
                     {contactInfo?.email || "admin@bdmbazar.com"}
-                  </p>
+                  </a>
                 </div>
               </div>
             </div>
@@ -92,7 +116,7 @@ export default function BengaliFooter() {
           {/* Right Side - Dynamic Menus */}
           <div className="lg:w-2/3">
             {/* First Row - 4 Dynamic Menus */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-6 mb-8">
               {footerSettings
                 ?.flatMap((setting: any) => 
                   setting.menus.map((menu: any) => ({ ...menu, settingId: setting._id }))
@@ -133,7 +157,7 @@ export default function BengaliFooter() {
             </div>
 
             {/* Second Row - Remaining Menus + Social */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div className="flex flex-col sm:grid sm:grid-cols-3 gap-6">
               {/* Remaining Dynamic Menus */}
               {footerSettings
                 ?.flatMap((setting: any) => 
