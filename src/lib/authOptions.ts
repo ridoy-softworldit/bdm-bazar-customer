@@ -2,6 +2,7 @@
 
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
+import FacebookProvider from 'next-auth/providers/facebook';
 import type { NextAuthOptions } from 'next-auth';
 
 export const authOptions: NextAuthOptions = {
@@ -9,6 +10,10 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+    FacebookProvider({
+      clientId: process.env.FACEBOOK_CLIENT_ID!,
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
     }),
     CredentialsProvider({
       name: 'Credentials',
@@ -54,7 +59,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user, account }: any) {
       
-      if (account?.provider === 'google') {
+      if (account?.provider === 'google' || account?.provider === 'facebook') {
         try {
           const res = await fetch(
             `${process.env.NEXT_PUBLIC_BASE_API}/auth/login/provider`,
@@ -64,7 +69,7 @@ export const authOptions: NextAuthOptions = {
               body: JSON.stringify({
                 name: user.name,
                 email: user.email,
-                provider: 'google',
+                provider: account.provider,
               }),
             }
           );

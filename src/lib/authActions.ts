@@ -31,10 +31,9 @@ export function useAuthHandlers() {
     }
   };
 
-  // Updated: Accept provider ("credentials" | "google")
   const handleLogin = async (
     data: { email: string; password?: string },
-    provider: "credentials" | "google" = "credentials"
+    provider: "credentials" | "google" | "facebook" = "credentials"
   ) => {
     try {
       const res = await signIn(provider, {
@@ -44,9 +43,8 @@ export function useAuthHandlers() {
           : { callbackUrl: "/" }),
       });
 
- 
-
       if (!res?.ok) {
+        if (provider !== "credentials") return; // Don't show error for OAuth redirects
         toast.error("Login failed");
         throw new Error("Login failed");
       }
@@ -54,6 +52,7 @@ export function useAuthHandlers() {
       // Get fresh session
       const session = await getSession();
       if (!session?.user) {
+        if (provider !== "credentials") return; // Don't show error for OAuth redirects
         toast.error("Session not found after login");
         throw new Error("Session missing");
       }
@@ -64,6 +63,7 @@ export function useAuthHandlers() {
 
       return session;
     } catch (err: any) {
+      if (provider !== "credentials") return; // Don't show error for OAuth redirects
       console.error("Login error:", err);
       toast.error(err.message || "Login failed");
       throw err;
