@@ -42,7 +42,7 @@ export default function BengaliFooter() {
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:underline cursor-pointer"
                   >
-                    Live Chat
+                    WhatsApp Live Chat ({contactInfo?.phone})
                   </a>
                 </p>
                 <p>
@@ -67,7 +67,7 @@ export default function BengaliFooter() {
                       href={contactInfo?.whatsappLink?.[0] || `https://wa.me/${contactInfo?.phone?.replace(/\D/g, '')}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-semibold hover:underline"
+                      className="font-semibold text-blue-600 hover:underline"
                     >
                       {contactInfo?.phone}
                     </a>{" "}
