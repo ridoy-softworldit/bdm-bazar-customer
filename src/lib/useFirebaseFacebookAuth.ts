@@ -37,8 +37,8 @@ export function useFirebaseFacebookAuth() {
       } else {
         toast.error("Login failed");
       }
-    } catch (error: any) {
-      toast.error(error.message || "Facebook login failed");
+    } catch {
+      toast.error("Facebook login failed");
     }
   };
 
