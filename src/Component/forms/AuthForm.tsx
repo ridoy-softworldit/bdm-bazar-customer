@@ -117,7 +117,7 @@ export default function AuthForm({ type }: AuthFormProps) {
               <input type="checkbox" className="accent-black" />
               Remember me
             </label>
-            <Link href="#" className="hover:underline">
+            <Link href="/auth/forgot-password" className="hover:underline">
               Forgot password?
             </Link>
           </div>

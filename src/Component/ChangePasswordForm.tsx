@@ -2,18 +2,22 @@
 "use client";
 
 import { useState } from "react";
-import { useChangePasswordMutation } from "@/redux/api/userApi";
+import { useChangePasswordMutation } from "@/redux/featured/auth/authApi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Lock, CheckCircle, AlertCircle } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 export default function ChangePasswordForm() {
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const { data: session } = useSession();
+  const [formData, setFormData] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -24,22 +28,24 @@ export default function ChangePasswordForm() {
     setError("");
     setSuccess("");
 
-    if (newPassword !== confirmPassword) {
+    if (formData.newPassword !== formData.confirmPassword) {
       setError("New passwords do not match");
       return;
     }
-    if (newPassword.length < 6) {
+    if (formData.newPassword.length < 6) {
       setError("Password must be at least 6 characters");
       return;
     }
 
     try {
       const result = await changePassword({
-        currentPassword,
-        newPassword,
+        userId: (session?.user as any)?.id,
+        oldPassword: formData.oldPassword,
+        newPassword: formData.newPassword,
       }).unwrap();
 
       setSuccess(result.message || "Password changed successfully!");
+      setFormData({ oldPassword: "", newPassword: "", confirmPassword: "" });
     } catch (err: any) {
       setError(err?.data?.message || "Failed to change password");
     }
@@ -48,15 +54,14 @@ export default function ChangePasswordForm() {
   return (
     <Card className="p-6 max-w-md mx-auto">
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Current Password */}
         <div>
           <Label htmlFor="current">Current Password</Label>
           <div className="relative">
             <Input
               id="current"
               type="password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
+              value={formData.oldPassword}
+              onChange={(e) => setFormData({ ...formData, oldPassword: e.target.value })}
               className="pl-10"
               placeholder="••••••••"
               required
@@ -65,15 +70,14 @@ export default function ChangePasswordForm() {
           </div>
         </div>
 
-        {/* New Password */}
         <div>
           <Label htmlFor="new">New Password</Label>
           <div className="relative">
             <Input
               id="new"
               type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
+              value={formData.newPassword}
+              onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
               className="pl-10"
               placeholder="••••••••"
               required
@@ -82,15 +86,14 @@ export default function ChangePasswordForm() {
           </div>
         </div>
 
-        {/* Confirm */}
         <div>
           <Label htmlFor="confirm">Confirm New Password</Label>
           <div className="relative">
             <Input
               id="confirm"
               type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              value={formData.confirmPassword}
+              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
               className="pl-10"
               placeholder="••••••••"
               required
@@ -99,7 +102,6 @@ export default function ChangePasswordForm() {
           </div>
         </div>
 
-        {/* Error */}
         {error && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
@@ -107,7 +109,6 @@ export default function ChangePasswordForm() {
           </Alert>
         )}
 
-        {/* Success */}
         {success && (
           <Alert className="border-green-200 bg-green-50 text-green-800">
             <CheckCircle className="h-4 w-4" />
