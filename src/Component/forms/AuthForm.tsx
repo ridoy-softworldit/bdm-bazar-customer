@@ -37,6 +37,7 @@ export default function AuthForm({ type }: AuthFormProps) {
   const router = useRouter();
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const redirectUrl = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '').get('redirect') || '/';
 
   const onSubmit = async (data: FormData) => {
     setError("");
@@ -45,10 +46,10 @@ export default function AuthForm({ type }: AuthFormProps) {
         await handleRegister(data);
         router.push("/auth/login");
       } else {
-        await handleLogin(data);
         const redirect = new URLSearchParams(window.location.search).get(
           "redirect"
         );
+        await handleLogin(data);
         router.push(redirect || "/");
       }
     } catch (err: any) {
@@ -136,7 +137,7 @@ export default function AuthForm({ type }: AuthFormProps) {
               <Button
                 variant={"outline"}
                 type="button"
-                onClick={() => handleLogin({ email: "" }, "google")}
+                onClick={() => signIn("google", { callbackUrl: redirectUrl })}
                 className="flex-1 gap-2"
               >
                 <Image src="/google.png" alt="Google" width={20} height={20} />

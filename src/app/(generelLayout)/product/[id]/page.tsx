@@ -9,18 +9,21 @@ import { useGetAllReviewsQuery } from "@/redux/api/reviewApi";
 import { ApiBook, ApiResponse, Book, RelatedBook } from "@/types/boook";
 import { useSession } from "next-auth/react";
 import { useState, useEffect, use } from "react";
+import { useRouter } from "next/navigation";
 import {
   useGetApprovedReviewsByProductQuery,
   useCreateReviewMutation,
 } from "@/redux/api/reviewApi";
 import { Star } from "lucide-react";
 import Image from "next/image";
+import toast from "react-hot-toast";
 
 interface BookProductPageProps {
   params: Promise<{ id: string }>;
 }
 export default function BookProductPage({ params }: BookProductPageProps) {
   const { id } = use(params);
+  const router = useRouter();
   const [mainBook, setMainBook] = useState<Book | null>(null);
   const [relatedBooks, setRelatedBooks] = useState<RelatedBook[]>([]);
   const [isBookCategory, setIsBookCategory] = useState<boolean>(true);
@@ -39,7 +42,7 @@ export default function BookProductPage({ params }: BookProductPageProps) {
 
   const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!session?.user) return alert("Please log in first");
+    if (!session?.user) return toast.error("Please log in first");
 
     const formData = new FormData();
     formData.append("user", (session.user as any).id);
@@ -53,13 +56,13 @@ export default function BookProductPage({ params }: BookProductPageProps) {
       setIsSubmitting(true);
       const res = await createReview(formData).unwrap();
      
-      alert("Review submitted successfully!");
+      toast.success("Review submitted successfully!");
       setDescription("");
       setPhotos([]);
       setRating(0);
     } catch (err) {
       console.error("Failed to submit review:", err);
-      alert("Something went wrong!");
+      toast.error("Something went wrong!");
     } finally {
       setIsSubmitting(false);
     }
@@ -435,7 +438,7 @@ export default function BookProductPage({ params }: BookProductPageProps) {
                 Please{" "}
                 <span
                   className="text-teal-600 hover:underline cursor-pointer"
-                  onClick={() => {}}
+                  onClick={() => router.push(`/auth/login?redirect=/product/${id}`)}
                 >
                   log in
                 </span>{" "}
