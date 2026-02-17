@@ -354,7 +354,7 @@ export default function Navbar({ isMobileMenuOpen, setIsMobileMenuOpen }: Navbar
                       </div>
                       <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 cursor-pointer">
                         <LayoutDashboard className="h-4 w-4" />
-                        <Link href="/dashboard/profile" className="w-full">
+                        <Link href="/dashboard/orders" className="w-full">
                           Dashboard
                         </Link>
                       </DropdownMenuItem>

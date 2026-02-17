@@ -76,10 +76,12 @@ const NavbarActions = () => {
                 </p>
               </Link>
             </DropdownMenuItem> */}
-              <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 cursor-pointer">
-                <LayoutDashboard className="h-4 w-4" />
-                <Link href="/dashboard/profile">Dashboard</Link>
-              </DropdownMenuItem>
+              <Link href="/dashboard/orders">
+                <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 cursor-pointer">
+                  <LayoutDashboard className="h-4 w-4" />
+                  Dashboard
+                </DropdownMenuItem>
+              </Link>
               <DropdownMenuItem
                 onClick={handleLogout}
                 className="rounded-full px-3  py-0 md:py-1 text-xs md:text-sm"
