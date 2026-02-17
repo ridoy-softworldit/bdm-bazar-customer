@@ -50,6 +50,12 @@ export default function Navbar({ isMobileMenuOpen, setIsMobileMenuOpen }: Navbar
   const currentUser = useAppSelector(selectCurrentUser);
   const { data: session } = useSession();
 
+  // Debug logs
+  useEffect(() => {
+    console.log("📊 Navbar - currentUser:", currentUser);
+    console.log("📊 Navbar - session:", session);
+  }, [currentUser, session]);
+
   const [logout] = useLogoutMutation();
   const router = useRouter();
   const pathname = usePathname();

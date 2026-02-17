@@ -46,13 +46,16 @@ export default function AuthForm({ type }: AuthFormProps) {
         await handleRegister(data);
         router.push("/auth/login");
       } else {
+        console.log("🔑 Login attempt with:", data.email);
         const redirect = new URLSearchParams(window.location.search).get(
           "redirect"
         );
         await handleLogin(data);
+        console.log("✅ Login successful, redirecting...");
         router.push(redirect || "/");
       }
     } catch (err: any) {
+      console.error("❌ Login error:", err);
       setError(err.message || "Something went wrong");
     }
   };

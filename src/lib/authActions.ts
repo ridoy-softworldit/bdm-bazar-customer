@@ -36,12 +36,15 @@ export function useAuthHandlers() {
     provider: "credentials" | "google" | "facebook" = "credentials"
   ) => {
     try {
+      console.log("🔑 handleLogin called with provider:", provider);
       const res = await signIn(provider, {
         redirect: false,
         ...(provider === "credentials"
           ? { email: data.email, password: data.password }
           : { callbackUrl: "/" }),
       });
+
+      console.log("📝 signIn response:", res);
 
       if (!res?.ok) {
         if (provider !== "credentials") return; // Don't show error for OAuth redirects
@@ -51,20 +54,32 @@ export function useAuthHandlers() {
 
       // Get fresh session
       const session = await getSession();
+      console.log("📝 getSession result:", session);
+      
       if (!session?.user) {
         if (provider !== "credentials") return; // Don't show error for OAuth redirects
         toast.error("Session not found after login");
         throw new Error("Session missing");
       }
 
-      // Dispatch user to Redux
-      dispatch(setUser(session.user));
+      // Dispatch user to Redux with proper mapping
+      const userData = {
+        _id: session.user.id,
+        id: session.user.id,
+        name: session.user.name,
+        email: session.user.email,
+        role: session.user.role,
+        gender: session.user.gender,
+        walletPoint: session.user.walletPoint,
+      };
+      console.log("✅ Dispatching user to Redux:", userData);
+      dispatch(setUser(userData));
       toast.success("Login successful!");
 
       return session;
     } catch (err: any) {
       if (provider !== "credentials") return; // Don't show error for OAuth redirects
-      console.error("Login error:", err);
+      console.error("❌ Login error:", err);
       toast.error(err.message || "Login failed");
       throw err;
     }

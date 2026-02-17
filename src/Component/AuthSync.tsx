@@ -12,8 +12,20 @@ export default function AuthSync() {
   useEffect(() => {
     const syncSession = async () => {
       const session = await getSession();
+      console.log("🔍 AuthSync - session:", session);
+      
       if (session?.user) {
-        dispatch(setUser(session.user));
+        const userData = {
+          _id: session.user.id,
+          id: session.user.id,
+          name: session.user.name,
+          email: session.user.email,
+          role: session.user.role,
+          gender: session.user.gender,
+          walletPoint: session.user.walletPoint,
+        };
+        console.log("✅ AuthSync - dispatching user:", userData);
+        dispatch(setUser(userData));
       }
     };
 
