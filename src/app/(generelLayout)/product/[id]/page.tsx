@@ -118,6 +118,7 @@ export default function BookProductPage({ params }: BookProductPageProps) {
             editionYear: productData.bookInfo?.specification?.editionYear,
             publisher: productData.bookInfo?.specification?.publisher || productData.categoryAndTags?.publisher,
             previewImg: productData.previewImg,
+            previewPdf: productData.previewPdf,
             // ✅ Handle preview images safely
           };
           setMainBook(mappedBook);

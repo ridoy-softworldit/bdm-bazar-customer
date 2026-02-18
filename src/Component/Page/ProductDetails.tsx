@@ -42,6 +42,7 @@ export default function ProductDetails({
   id,
   image,
   previewImg,
+  previewPdf,
   showPreview: externalShowPreview,
   onPreviewClose,
 }: ProductDetailsProps) {
@@ -317,7 +318,39 @@ export default function ProductDetails({
       </div>
 
       {/* Preview Modal */}
-      {showPreview && previewImg && previewImg.length > 0 && (
+      {showPreview && previewPdf && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-0 sm:p-4">
+          <div className="bg-white w-full h-full sm:h-[95vh] sm:max-w-5xl sm:rounded-lg overflow-hidden flex flex-col shadow-2xl">
+            <div className="flex justify-between items-center p-3 sm:p-4 border-b bg-gray-50">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 truncate">
+                একটু পড়ে দেখুন: {title.replace(/\s*\(undefined\)\s*$/, '')}
+              </h3>
+              <button
+                onClick={() => {
+                  if (onPreviewClose) {
+                    onPreviewClose();
+                  } else {
+                    setInternalShowPreview(false);
+                  }
+                }}
+                className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 sm:p-2 rounded-full transition-colors flex-shrink-0"
+              >
+                <X className="w-5 h-5 sm:w-6 sm:h-6" />
+              </button>
+            </div>
+            <div className="flex-1 bg-white">
+              <iframe
+                src={previewPdf}
+                className="w-full h-full border-0 block"
+                title="PDF Preview"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Image Preview Modal (fallback if no PDF) */}
+      {showPreview && !previewPdf && previewImg && previewImg.length > 0 && (
         <div className="fixed inset-0 backdrop-blur-xs bg-white/30 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
             <div className="flex justify-between items-center p-4 border-b">

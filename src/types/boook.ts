@@ -23,6 +23,7 @@ export interface Book {
   editionYear: number;
   publisher?: string;
   previewImg: string[];
+  previewPdf?: string;
 }
 
 export interface RelatedBook {
@@ -40,6 +41,7 @@ export interface RelatedBook {
 
 export interface ApiBook {
   previewImg: string[];
+  previewPdf?: string;
   _id: string;
   featuredImg: string;
   description: {

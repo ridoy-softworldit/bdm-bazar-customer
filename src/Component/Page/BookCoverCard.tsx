@@ -42,15 +42,15 @@ export default function BookCoverCard({ book, onPreviewClick }: BookCoverCardPro
         </CardContent>
       </Card>
 
-      {/* একটু পড়ে দেখুন Button */}
-      {book.previewImg && book.previewImg.length > 0 && (
+      {/* একটু পড়ে দেখুন Button */}
+      {((book.previewPdf && book.previewPdf.length > 0) || (book.previewImg && book.previewImg.length > 0)) && (
         <Button
           onClick={onPreviewClick}
           variant="outline"
           className="w-full gap-2 border-blue-600 text-blue-600 hover:bg-blue-50"
         >
           <Eye className="w-4 h-4" />
-          একটু পড়ে দেখুন
+          একটু পড়ে দেখুন
         </Button>
       )}
 
