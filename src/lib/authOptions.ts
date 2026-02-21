@@ -45,6 +45,8 @@ export const authOptions: NextAuthOptions = {
           role: json.data.role,
           gender: json.data.gender,
           walletPoint: json.data.walletPoint,
+          contactNo: json.data.contactNo,
+          bio: json.data.bio,
         };
       },
     }),
@@ -80,6 +82,8 @@ export const authOptions: NextAuthOptions = {
             user.role = json.data.role;
             user.gender = json.data.gender;
             user.walletPoint = json.data.walletPoint;
+            user.contactNo = json.data.contactNo;
+            user.bio = json.data.bio;
             return true;
           }
         } catch (error) {
@@ -97,6 +101,8 @@ export const authOptions: NextAuthOptions = {
         token.role = user.role;
         token.gender = user.gender;
         token.walletPoint = user.walletPoint;
+        token.contactNo = user.contactNo;
+        token.bio = user.bio;
       }
       return token;
     },
@@ -108,6 +114,8 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role as string;
         session.user.gender = token.gender as string;
         session.user.walletPoint = token.walletPoint as number;
+        session.user.contactNo = token.contactNo as string;
+        session.user.bio = token.bio as string;
       }
       return session;
     },

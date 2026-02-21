@@ -7,11 +7,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Camera, Save, Mail, Phone, User } from "lucide-react";
-import { useAppSelector } from "@/redux/hooks";
-import { selectCurrentUser } from "@/redux/featured/auth/authSlice";
+import { useAppSelector, useAppDispatch } from "@/redux/hooks";
+import { selectCurrentUser, setUser } from "@/redux/featured/auth/authSlice";
+import { useUpdateUserMutation, useGetSingleUserQuery } from "@/redux/api/userApi";
+import toast from "react-hot-toast";
 
 export default function ProfilePage() {
   const user = useAppSelector(selectCurrentUser);
+  const dispatch = useAppDispatch();
+  const [updateUser, { isLoading }] = useUpdateUserMutation();
+  const { data: userData } = useGetSingleUserQuery(user?._id || "", { skip: !user?._id });
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -22,26 +27,44 @@ export default function ProfilePage() {
     image: "/placeholder.svg?height=64&width=64",
   });
 
-  // ✅ Sync Redux user into form state
   useEffect(() => {
-    if (user) {
-      // Split full name into first/last
-      const [firstName, ...rest] = user.name?.split(" ") || ["", ""];
+    const currentUser = userData?.data || user;
+    if (currentUser) {
+      const [firstName, ...rest] = currentUser.name?.split(" ") || ["", ""];
       const lastName = rest.join(" ");
 
       setFormData({
         firstName: firstName || "",
         lastName: lastName || "",
-        email: user.email || "",
-        contactNo: "", // backend didn’t provide -> leave empty
-        bio: `Hi, I'm ${user.name}.`, // you can adjust
+        email: currentUser.email || "",
+        contactNo: currentUser.contactNo || "",
+        bio: currentUser.bio || `Hi, I'm ${currentUser.name}.`,
         image: "/placeholder.svg?height=64&width=64",
       });
     }
-  }, [user]);
+  }, [user, userData]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSave = async () => {
+    if (!user?._id) return;
+    try {
+      const payload = {
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
+        contactNo: formData.contactNo,
+        bio: formData.bio,
+      };
+      const result = await updateUser({ id: user._id, data: payload }).unwrap();
+      if (result?.data) {
+        dispatch(setUser({ ...user, ...result.data }));
+      }
+      toast.success("Profile updated successfully!");
+    } catch (error) {
+      const err = error as { data?: { message?: string } };
+      toast.error(err?.data?.message || "Failed to update profile");
+    }
   };
 
   return (
@@ -109,9 +132,8 @@ export default function ProfilePage() {
                     <Input
                       type="email"
                       value={formData.email}
-                      onChange={(e) =>
-                        handleInputChange("email", e.target.value)
-                      }
+                      disabled
+                      className="bg-gray-50 cursor-not-allowed"
                     />
                   </div>
                   <div>
@@ -144,9 +166,9 @@ export default function ProfilePage() {
 
               {/* Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 pt-8">
-                <Button className="bg-[#19A5D6] hover:bg-[#DDF0F8] text-white hover:text-[#19A2D5] px-8 py-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 font-medium">
+                <Button onClick={handleSave} disabled={isLoading} className="bg-[#19A5D6] hover:bg-[#DDF0F8] text-white hover:text-[#19A2D5] px-8 py-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 font-medium">
                   <Save className="w-4 h-4 mr-2" />
-                  Save Changes
+                  {isLoading ? "Saving..." : "Save Changes"}
                 </Button>
                 <Button
                   variant="outline"

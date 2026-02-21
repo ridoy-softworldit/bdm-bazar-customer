@@ -20,6 +20,8 @@ export default function SessionSync() {
         role: session.user.role,
         gender: session.user.gender,
         walletPoint: session.user.walletPoint,
+        contactNo: session.user.contactNo,
+        bio: session.user.bio,
       };
       console.log("✅ SessionSync - dispatching user:", userData);
       dispatch(setUser(userData));

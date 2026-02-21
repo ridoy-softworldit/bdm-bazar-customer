@@ -7,9 +7,10 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { selectCurrentUser } from "@/redux/featured/auth/authSlice";
 import { useAppSelector } from "@/redux/hooks";
+import { useGetMyOrdersQuery } from "@/redux/featured/order/orderApi";
 import { Eye, Search, Copy } from "lucide-react";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 const getStatusVariant = (status: string) => {
   switch (status.toLowerCase()) {
@@ -32,19 +33,33 @@ const getStatusVariant = (status: string) => {
 };
 
 export default function MyOrdersTable() {
-  const [orders, setOrders] = useState<any[]>([]);
-  const [filteredOrders, setFilteredOrders] = useState<any[]>([]);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [trackingError, setTrackingError] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [trackedOrder, setTrackedOrder] = useState<any | null>(null);
-  const [productDetails, setProductDetails] = useState<{[key: string]: any}>({});
   const [copiedTrackingId, setCopiedTrackingId] = useState<string | null>(null);
 
   const user: any = useAppSelector(selectCurrentUser);
+  const { data, isLoading } = useGetMyOrdersQuery(
+    { customerId: user?.id || "", page, limit },
+    { skip: !user?.id }
+  );
+
+  const orders = data?.data || [];
+  const total = data?.meta?.total || 0;
+  const totalPages = Math.ceil(total / limit);
+
+  const displayOrders = searchTerm.trim()
+    ? orders.filter((order: any) =>
+        String(order.orderInfo[0]?.trackingNumber || "")
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())
+      )
+    : orders;
 
   const handleCopyTracking = (trackingNumber: string) => {
     navigator.clipboard.writeText(trackingNumber);
@@ -52,43 +67,6 @@ export default function MyOrdersTable() {
     setTimeout(() => setCopiedTrackingId(null), 2000);
   };
 
-  // Fetch logged-in user orders
-  useEffect(() => {
-    if (!user?.id) {
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-
-    fetch(`${process.env.NEXT_PUBLIC_BASE_API}/order/my-order/${user.id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data?.success) {
-          setOrders(data.data);
-          setFilteredOrders(data.data);
-        }
-      })
-      .catch((err) => console.error("Error fetching orders:", err))
-      .finally(() => setLoading(false));
-  }, [user?.id]);
-
-  // 🔍 Handle search for logged-in users
-  useEffect(() => {
-    if (!user?.id) return;
-
-    if (!searchTerm.trim()) {
-      setFilteredOrders(orders);
-    } else {
-      const filtered = orders.filter((order: any) =>
-        String(order.orderInfo[0]?.trackingNumber || "")
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase())
-      );
-      setFilteredOrders(filtered);
-    }
-  }, [searchTerm, orders, user?.id]);
-
-  // 🔍 Handle tracking for non-logged-in users
   const handleTrackOrder = async () => {
     if (!searchTerm.trim()) {
       setTrackingError("Please enter a tracking number");
@@ -118,13 +96,11 @@ export default function MyOrdersTable() {
     }
   };
 
-  const handleViewOrder = async (order: any) => {
+  const handleViewOrder = (order: any) => {
     setSelectedOrder(order);
     setIsModalOpen(true);
-    // No need to fetch product details as they're already in the order
   };
 
-  // Non-logged-in user view (Track order)
   if (!user?.id) {
     return (
       <div className="w-full px-4 md:px-6">
@@ -171,7 +147,6 @@ export default function MyOrdersTable() {
             )}
           </div>
 
-          {/* Display tracked order details */}
           {trackedOrder && (
             <div className="space-y-6 border-t pt-6">
               <div className="flex items-center justify-between gap-2">
@@ -289,7 +264,6 @@ export default function MyOrdersTable() {
     );
   }
 
-  // Logged-in user view (My Orders)
   return (
     <div className="w-full px-4 md:px-6">
       <div className="bg-white w-full max-w-6xl mx-auto rounded-xl shadow-md overflow-hidden border border-gray-100">
@@ -308,13 +282,12 @@ export default function MyOrdersTable() {
         </div>
 
         <div className="overflow-x-auto w-full">
-          {loading ? (
+          {isLoading ? (
             <p className="text-center text-gray-500 py-10">Loading orders...</p>
-          ) : filteredOrders.length === 0 ? (
+          ) : displayOrders.length === 0 ? (
             <p className="text-center text-gray-500 py-10">No orders found.</p>
           ) : (
             <>
-              {/* Desktop Table */}
               <table className="hidden md:table w-full border-separate border-spacing-y-2">
                 <thead>
                   <tr className="text-gray-500 uppercase text-sm tracking-wider">
@@ -326,7 +299,7 @@ export default function MyOrdersTable() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredOrders.map((order: any) => (
+                  {displayOrders.map((order: any) => (
                     <tr
                       key={order._id}
                       className="bg-gray-50 rounded-lg hover:shadow-md transition-all duration-200"
@@ -376,9 +349,8 @@ export default function MyOrdersTable() {
                 </tbody>
               </table>
 
-              {/* Mobile Cards */}
               <div className="md:hidden space-y-3 p-4">
-                {filteredOrders.map((order: any) => (
+                {displayOrders.map((order: any) => (
                   <div key={order._id} className="bg-gray-50 rounded-lg p-4 space-y-3">
                     <div className="flex justify-between items-start">
                       <div>
@@ -426,9 +398,22 @@ export default function MyOrdersTable() {
             </>
           )}
         </div>
+
+        {!isLoading && displayOrders.length > 0 && (
+          <div className="p-4 border-t flex justify-between items-center">
+            <p className="text-sm text-gray-600">Page {page} of {totalPages} ({total} total orders)</p>
+            <div className="flex gap-2">
+              <Button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} variant="outline" size="sm">
+                Previous
+              </Button>
+              <Button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} variant="outline" size="sm">
+                Next
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Modal for logged-in user */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-6 rounded-xl shadow-xl">
           <DialogTitle className="sr-only">Order Details</DialogTitle>

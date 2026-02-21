@@ -15,8 +15,8 @@ interface SidebarItem {
 }
 
 const sidebarItems: SidebarItem[] = [
-  { icon: User, label: "Profile", path: "/dashboard/profile" },
   { icon: Package, label: "Orders", path: "/dashboard/orders" },
+  { icon: User, label: "Profile", path: "/dashboard/profile" },
   { icon: Heart, label: "Wishlist", path: "/wishlist" },
   { icon: MapPin, label: "Address", path: "/dashboard/addressesPage" },
   {

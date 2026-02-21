@@ -31,6 +31,13 @@ const orderApi = baseApi.injectEndpoints({
       }),
       transformResponse: (response: { data: any }) => response.data,
     }),
+    getMyOrders: builder.query<any, { customerId: string; page?: number; limit?: number }>({
+      query: ({ customerId, page = 1, limit = 10 }) => ({
+        url: `/order/my-order/${customerId}?page=${page}&limit=${limit}`,
+        method: "GET",
+      }),
+      providesTags: ['Order'],
+    }),
   }),
 });
 
@@ -39,4 +46,5 @@ export const {
   useGetSingleOrderQuery,
   useCreateOrderMutation,
   useTrackOrderQuery,
+  useGetMyOrdersQuery,
 } = orderApi;
