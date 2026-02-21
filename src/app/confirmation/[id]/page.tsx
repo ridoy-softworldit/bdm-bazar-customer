@@ -14,9 +14,9 @@ interface TotalAmount {
 }
 
 interface OrderInfo {
+  trackingNumber: number;
   orderBy: string;
   productInfo: string;
-  trackingNumber: string;
   status: string;
   isCancelled: boolean;
   quantity: number;
@@ -36,6 +36,7 @@ interface CustomerInfo {
 
 interface OrderData {
   _id: string;
+  orderId: string;
   orderInfo: OrderInfo[];
   customerInfo: CustomerInfo;
   paymentInfo: string;
@@ -75,9 +76,9 @@ export default function OrderConfirmation() {
     }
   }, [id]);
  
-  const handleCopy = (trackingNumber: string) => {
-    if (trackingNumber) {
-      navigator.clipboard.writeText(trackingNumber);
+  const handleCopy = (orderId: string) => {
+    if (orderId) {
+      navigator.clipboard.writeText(orderId);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
@@ -175,20 +176,18 @@ export default function OrderConfirmation() {
                     Thank you for your order
                   </h1>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 flex-wrap">
-                    <span className="text-sm sm:text-base text-gray-700">Order Number: </span>
-                    {orderInfo.map((item, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <span className="font-semibold text-sm sm:text-base text-gray-900 break-all">
-                          {item.trackingNumber || "N/A"}
-                        </span>
-                        <button
-                          onClick={() => handleCopy(item.trackingNumber)}
-                          className="px-2 sm:px-3 py-1 border-2 border-cyan-500 text-cyan-500 rounded hover:bg-cyan-50 transition-colors text-xs sm:text-sm font-medium whitespace-nowrap"
-                        >
-                          {copied ? "Copied!" : "Copy"}
-                        </button>
-                      </div>
-                    ))}
+                    <span className="text-sm sm:text-base text-gray-700">Tracking No: </span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-sm sm:text-base text-gray-900 break-all">
+                        {orderInfo[0]?.trackingNumber || "N/A"}
+                      </span>
+                      <button
+                        onClick={() => handleCopy(String(orderInfo[0]?.trackingNumber || ""))}
+                        className="px-2 sm:px-3 py-1 border-2 border-cyan-500 text-cyan-500 rounded hover:bg-cyan-50 transition-colors text-xs sm:text-sm font-medium whitespace-nowrap"
+                      >
+                        {copied ? "Copied!" : "Copy"}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

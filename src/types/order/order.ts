@@ -31,7 +31,7 @@ export type ProductInfo = {
 export interface OrderItem {
   orderBy: string; // user ID
   productInfo: ProductInfo; // full object for confirmation page
-  trackingNumber: string;
+  trackingNumber: number;
   status:
     | "pending"
     | "processing"

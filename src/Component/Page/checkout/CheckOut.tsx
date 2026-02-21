@@ -4,7 +4,7 @@ import { CartItem, clearCart } from "@/lib/slices/cartSlice";
 import { selectCurrentUser } from "@/redux/featured/auth/authSlice";
 import { useAppSelector } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Swal from "sweetalert2";
 import { z } from "zod";
@@ -13,6 +13,7 @@ import PaymentMethod from "./PaymentMethod";
 import ShippingAddress, { CustomerInfo } from "./ShippingAddress";
 import CheckoutOptions from "./CheckoutOptions";
 import useSettings from "@/hooks/useSettings";
+import { useRouter } from "next/navigation";
 
 // Zod Schema
 const objectIdSchema = z
@@ -54,7 +55,7 @@ const paymentInfoZodSchema = z.literal("cash-on");
 const orderInfoZodSchema = z.object({
   orderBy: objectIdSchema.optional(),
   productInfo: objectIdSchema,
-  trackingNumber: z.string().optional(),
+  trackingNumber: z.number(),
   status: z
     .enum([
       "pending",
@@ -115,8 +116,11 @@ const GiftIcon: React.FC = () => (
 );
 
 const CheckOut: React.FC = () => {
-  const items = useSelector((state: RootState) =>
-    state.cart.items.filter((i: CartItem) => i.selected)
+  const router = useRouter();
+  const cartItems = useSelector((state: RootState) => state.cart.items);
+  const items = useMemo(() => 
+    cartItems.filter((i: CartItem) => i.selected), 
+    [cartItems]
   );
   const dispatch = useDispatch();
   const [checkoutType, setCheckoutType] = useState<"guest" | "user" | null>(null);
@@ -179,7 +183,7 @@ const CheckOut: React.FC = () => {
         confirmButtonColor: "#3085d6",
       }).then(() => {
         const currentUrl = window.location.pathname + window.location.search;
-        window.location.href = `/auth/login?redirect=${encodeURIComponent(currentUrl)}`;
+        router.push(`/auth/login?redirect=${encodeURIComponent(currentUrl)}`);
       });
       return;
     }
@@ -189,7 +193,7 @@ const CheckOut: React.FC = () => {
       return {
         orderBy: checkoutType === "user" ? user?.id : undefined,
         productInfo: item.id,
-        trackingNumber: "TRK" + Math.floor(Math.random() * 1000000000),
+        trackingNumber: Math.floor(Math.random() * 900000000) + 100000000,
         status: "pending",
         isCancelled: false,
         quantity: item.quantity,
@@ -244,6 +248,9 @@ const CheckOut: React.FC = () => {
     }
     setErrors([]);
 
+    console.log("📦 Order Payload:", JSON.stringify(result.data, null, 2));
+    console.log("🌐 API URL:", process.env.NEXT_PUBLIC_BASE_API);
+
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_API}/order/create-order`,
@@ -254,6 +261,7 @@ const CheckOut: React.FC = () => {
         }
       );
       const data = await res.json();
+      console.log("✅ Order Response:", JSON.stringify(data, null, 2));
       if (data.success && data.data) {
         const createdOrderId = Array.isArray(data.data)
           ? data.data[0]?._id
@@ -269,9 +277,9 @@ const CheckOut: React.FC = () => {
         }).then(() => {
           dispatch(clearCart());
           if (createdOrderId) {
-            window.location.href = `/confirmation/${createdOrderId}`;
+            router.push(`/confirmation/${createdOrderId}`);
           } else {
-            window.location.href = "/confirmation";
+            router.push("/confirmation");
           }
         });
       } else {

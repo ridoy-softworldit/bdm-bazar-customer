@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { selectCurrentUser } from "@/redux/featured/auth/authSlice";
 import { useAppSelector } from "@/redux/hooks";
-import { Eye, Search } from "lucide-react";
+import { Eye, Search, Copy } from "lucide-react";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 
@@ -42,8 +42,15 @@ export default function MyOrdersTable() {
   const [isSearching, setIsSearching] = useState(false);
   const [trackedOrder, setTrackedOrder] = useState<any | null>(null);
   const [productDetails, setProductDetails] = useState<{[key: string]: any}>({});
+  const [copiedTrackingId, setCopiedTrackingId] = useState<string | null>(null);
 
   const user: any = useAppSelector(selectCurrentUser);
+
+  const handleCopyTracking = (trackingNumber: string) => {
+    navigator.clipboard.writeText(trackingNumber);
+    setCopiedTrackingId(trackingNumber);
+    setTimeout(() => setCopiedTrackingId(null), 2000);
+  };
 
   // Fetch logged-in user orders
   useEffect(() => {
@@ -73,8 +80,8 @@ export default function MyOrdersTable() {
       setFilteredOrders(orders);
     } else {
       const filtered = orders.filter((order: any) =>
-        order.orderInfo[0]?.trackingNumber
-          ?.toLowerCase()
+        String(order.orderInfo[0]?.trackingNumber || "")
+          .toLowerCase()
           .includes(searchTerm.toLowerCase())
       );
       setFilteredOrders(filtered);
@@ -114,36 +121,7 @@ export default function MyOrdersTable() {
   const handleViewOrder = async (order: any) => {
     setSelectedOrder(order);
     setIsModalOpen(true);
-    
-    // Fetch product details for all items in the order
-    const productIds = order.orderInfo.map((item: any) => item.productInfo);
-    const uniqueProductIds = [...new Set(productIds)];
-    
-    const productPromises = uniqueProductIds.map(async (productId: unknown) => {
-      const id = productId as string;
-      if (!productDetails[id]) {
-        try {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/product/${id}`);
-          const data = await response.json();
-          if (data?.success) {
-            return { [id]: data.data };
-          }
-        } catch (err) {
-          console.error(`Error fetching product ${id}:`, err);
-        }
-      }
-      return null;
-    });
-    
-    const results = await Promise.all(productPromises);
-    const newProductDetails = results.reduce((acc, result) => {
-      if (result) {
-        return { ...acc, ...result };
-      }
-      return acc;
-    }, {});
-    
-    setProductDetails(prev => ({ ...prev, ...newProductDetails }));
+    // No need to fetch product details as they're already in the order
   };
 
   // Non-logged-in user view (Track order)
@@ -165,7 +143,7 @@ export default function MyOrdersTable() {
               <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
               <Input
                 type="text"
-                placeholder="Enter Tracking Number (e.g., MEc1Bb66lXA2ZTiWmmfW0)"
+                placeholder="Enter Tracking Number (e.g., 1234567890)"
                 className="pl-10 h-12 text-base"
                 value={searchTerm}
                 onChange={(e) => {
@@ -354,7 +332,19 @@ export default function MyOrdersTable() {
                       className="bg-gray-50 rounded-lg hover:shadow-md transition-all duration-200"
                     >
                       <td className="py-4 px-6 font-medium">
-                        {order.orderInfo[0]?.trackingNumber}
+                        <div className="flex items-center gap-2">
+                          <span>{order.orderInfo[0]?.trackingNumber}</span>
+                          <button
+                            onClick={() => handleCopyTracking(order.orderInfo[0]?.trackingNumber)}
+                            className="p-1 hover:bg-gray-200 rounded transition-colors"
+                            title="Copy tracking number"
+                          >
+                            <Copy className="h-3 w-3 text-gray-500" />
+                          </button>
+                          {copiedTrackingId === order.orderInfo[0]?.trackingNumber && (
+                            <span className="text-xs text-green-600">Copied!</span>
+                          )}
+                        </div>
                       </td>
                       <td className="py-4 px-6 text-gray-600">
                         {new Date(order.createdAt).toLocaleDateString()}
@@ -393,7 +383,19 @@ export default function MyOrdersTable() {
                     <div className="flex justify-between items-start">
                       <div>
                         <p className="text-xs text-gray-500 uppercase">Tracking ID</p>
-                        <p className="font-medium text-sm">{order.orderInfo[0]?.trackingNumber}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-sm">{order.orderInfo[0]?.trackingNumber}</p>
+                          <button
+                            onClick={() => handleCopyTracking(order.orderInfo[0]?.trackingNumber)}
+                            className="p-1 hover:bg-gray-200 rounded transition-colors"
+                            title="Copy tracking number"
+                          >
+                            <Copy className="h-3 w-3 text-gray-500" />
+                          </button>
+                          {copiedTrackingId === order.orderInfo[0]?.trackingNumber && (
+                            <span className="text-xs text-green-600">Copied!</span>
+                          )}
+                        </div>
                       </div>
                       <Badge className={`rounded-full px-2 py-1 text-xs ${getStatusVariant(order.orderInfo[0]?.status)}`}>
                         {order.orderInfo[0]?.status}
@@ -488,7 +490,7 @@ export default function MyOrdersTable() {
                     <tbody>
                       {selectedOrder.orderInfo.map((item: any, i: number) => (
                         <tr key={i} className="border-b">
-                          <td className="py-2">{productDetails[item.productInfo]?.description?.name || 'Loading...'}</td>
+                          <td className="py-2">{item.productInfo?.description?.name}</td>
                           <td className="py-2">{item.quantity}</td>
                           <td className="py-2">৳{item.totalAmount.subTotal}</td>
                         </tr>
