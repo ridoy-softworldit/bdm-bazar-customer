@@ -123,7 +123,15 @@ const CheckOut: React.FC = () => {
     [cartItems]
   );
   const dispatch = useDispatch();
+  const user = useAppSelector(selectCurrentUser);
   const [checkoutType, setCheckoutType] = useState<"guest" | "user" | null>(null);
+  
+  // Auto-detect if user is logged in and set checkout type
+  useEffect(() => {
+    if (user?._id && checkoutType === null) {
+      setCheckoutType("user");
+    }
+  }, [user, checkoutType]);
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
     pickupLocation: "home",
     firstName: "",
@@ -138,8 +146,6 @@ const CheckOut: React.FC = () => {
     address: "",
     postalCode: "",
   });
-
-  const user = useAppSelector(selectCurrentUser);
 
   const [selectedPayment, setSelectedPayment] = useState<
     "cash-on-delivery" | "bkash" | "nagad" | "rocket"
@@ -175,7 +181,7 @@ const CheckOut: React.FC = () => {
 
   const handleOrderConfirm = async (): Promise<void> => {
     // Validate checkout type and user authentication
-    if (checkoutType === "user" && !user?.id) {
+    if (checkoutType === "user" && !user?._id) {
       Swal.fire({
         icon: "error",
         title: "Authentication Required",
@@ -191,7 +197,7 @@ const CheckOut: React.FC = () => {
     const orderInfo = items.map((item: CartItem) => {
       const itemSubtotal = item.price * item.quantity;
       return {
-        orderBy: checkoutType === "user" ? user?.id : undefined,
+        orderBy: checkoutType === "user" ? user?._id : undefined,
         productInfo: item.id,
         trackingNumber: Math.floor(Math.random() * 900000000) + 100000000,
         status: "pending",

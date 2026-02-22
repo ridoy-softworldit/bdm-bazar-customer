@@ -52,8 +52,6 @@ export default function Navbar({ isMobileMenuOpen, setIsMobileMenuOpen }: Navbar
 
   // Debug logs
   useEffect(() => {
-    console.log("📊 Navbar - currentUser:", currentUser);
-    console.log("📊 Navbar - session:", session);
   }, [currentUser, session]);
 
   const [logout] = useLogoutMutation();

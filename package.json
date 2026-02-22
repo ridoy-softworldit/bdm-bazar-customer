@@ -38,7 +38,7 @@
     "react": "^19.2.3",
     "react-country-state-city": "^1.1.12",
     "react-dom": "19.2.3",
-    "react-facebook-login": "^4.1.1",
+    "@greatsumini/react-facebook-login": "^3.4.0",
     "react-hook-form": "^7.62.0",
     "react-hot-toast": "^2.6.0",
     "react-places-autocomplete": "^7.3.0",

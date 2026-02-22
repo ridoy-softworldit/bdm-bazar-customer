@@ -12,7 +12,6 @@ export default function AuthSync() {
   useEffect(() => {
     const syncSession = async () => {
       const session = await getSession();
-      console.log("🔍 AuthSync - session:", session);
       
       if (session?.user) {
         const userData = {
@@ -24,7 +23,6 @@ export default function AuthSync() {
           gender: session.user.gender,
           walletPoint: session.user.walletPoint,
         };
-        console.log("✅ AuthSync - dispatching user:", userData);
         dispatch(setUser(userData));
       }
     };

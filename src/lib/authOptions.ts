@@ -63,32 +63,45 @@ export const authOptions: NextAuthOptions = {
       
       if (account?.provider === 'google' || account?.provider === 'facebook') {
         try {
-          const res = await fetch(
-            `${process.env.NEXT_PUBLIC_BASE_API}/auth/login/provider`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                name: user.name,
-                email: user.email,
-                provider: account.provider,
-              }),
-            }
-          );
-          const json = await res.json();
-
-          if (res.ok && json.success) {
-            user.id = json.data._id;
-            user.role = json.data.role;
-            user.gender = json.data.gender;
-            user.walletPoint = json.data.walletPoint;
-            user.contactNo = json.data.contactNo;
-            user.bio = json.data.bio;
+          const apiUrl = `${process.env.NEXT_PUBLIC_BASE_API}/auth/login/provider`;
+          const payload = {
+            name: user.name,
+            email: user.email,
+            provider: account.provider,
+          };
+          
+          
+          const res = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          
+          
+          if (!res.ok) {
+            const errorText = await res.text();
+            console.error('❌ Backend error:', errorText);
             return true;
           }
+          
+          const json = await res.json();
+
+          if (json.success && json.data) {
+            const dbUser = json.data;
+            user.id = dbUser._id;
+            user.role = dbUser.role || 'customer';
+            user.gender = dbUser.gender;
+            user.walletPoint = dbUser.walletPoint || 0;
+            user.contactNo = dbUser.contactNo;
+            user.bio = dbUser.bio;
+            return true;
+          }
+          
+          console.error('❌ Response not successful:', json);
+          return true;
         } catch (error) {
-          console.error(error);
-          return false;
+          console.error('❌ Exception:', error);
+          return true;
         }
       }
       return true;
@@ -108,7 +121,7 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }: any) {
       if (session.user) {
-        session.user.id = token.id as string;
+        session.user.id = token.id;
         session.user.name = token.name as string;
         session.user.email = token.email as string;
         session.user.role = token.role as string;

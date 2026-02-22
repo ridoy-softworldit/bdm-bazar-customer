@@ -10,7 +10,6 @@ export default function SessionSync() {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    console.log("🔍 SessionSync - session:", session);
     if (session?.user) {
       const userData = {
         _id: session.user.id,
@@ -23,7 +22,6 @@ export default function SessionSync() {
         contactNo: session.user.contactNo,
         bio: session.user.bio,
       };
-      console.log("✅ SessionSync - dispatching user:", userData);
       dispatch(setUser(userData));
     }
   }, [session, dispatch]);

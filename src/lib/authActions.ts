@@ -36,15 +36,12 @@ export function useAuthHandlers() {
     provider: "credentials" | "google" | "facebook" = "credentials"
   ) => {
     try {
-      console.log("🔑 handleLogin called with provider:", provider);
       const res = await signIn(provider, {
         redirect: false,
         ...(provider === "credentials"
           ? { email: data.email, password: data.password }
           : { callbackUrl: "/" }),
       });
-
-      console.log("📝 signIn response:", res);
 
       if (!res?.ok) {
         if (provider !== "credentials") return; // Don't show error for OAuth redirects
@@ -54,7 +51,6 @@ export function useAuthHandlers() {
 
       // Get fresh session
       const session = await getSession();
-      console.log("📝 getSession result:", session);
       
       if (!session?.user) {
         if (provider !== "credentials") return; // Don't show error for OAuth redirects
@@ -72,7 +68,6 @@ export function useAuthHandlers() {
         gender: session.user.gender,
         walletPoint: session.user.walletPoint,
       };
-      console.log("✅ Dispatching user to Redux:", userData);
       dispatch(setUser(userData));
       toast.success("Login successful!");
 
