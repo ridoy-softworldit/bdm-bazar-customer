@@ -89,11 +89,7 @@ const CategoryWiseProducts: React.FC<CategoryWiseProductsProps> = ({ categoryNam
     el.scrollBy({ left: delta, behavior: "smooth" });
   };
 
-  console.log('CategoryWiseProducts Debug:', {
-    categoryName,
-    productsCount: products.length,
-    allProductsCount: allProducts.length
-  });
+  
 
   if (isLoading) {
     return (

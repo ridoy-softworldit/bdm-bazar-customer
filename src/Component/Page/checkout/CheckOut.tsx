@@ -248,8 +248,6 @@ const CheckOut: React.FC = () => {
     }
     setErrors([]);
 
-    console.log("📦 Order Payload:", JSON.stringify(result.data, null, 2));
-    console.log("🌐 API URL:", process.env.NEXT_PUBLIC_BASE_API);
 
     try {
       const res = await fetch(
@@ -261,7 +259,7 @@ const CheckOut: React.FC = () => {
         }
       );
       const data = await res.json();
-      console.log("✅ Order Response:", JSON.stringify(data, null, 2));
+       JSON.stringify(data, null, 2);
       if (data.success && data.data) {
         const createdOrderId = Array.isArray(data.data)
           ? data.data[0]?._id

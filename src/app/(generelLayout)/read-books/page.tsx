@@ -39,7 +39,6 @@ export default function ReadBooksPage() {
           
           // Debug: log what's in the digital field
           if (product.productInfo.digital) {
-            console.log('Digital URL:', product.productInfo.digital);
           }
           
           // Include books that have digital field OR preview images

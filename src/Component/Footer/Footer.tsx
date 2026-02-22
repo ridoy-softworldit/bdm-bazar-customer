@@ -115,66 +115,23 @@ export default function BengaliFooter() {
 
           {/* Right Side - Dynamic Menus */}
           <div className="lg:w-2/3">
-            {/* First Row - 4 Dynamic Menus */}
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-6 mb-8">
+            {/* All Menus in Fixed Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
               {footerSettings
                 ?.flatMap((setting: any) => 
                   setting.menus.map((menu: any) => ({ ...menu, settingId: setting._id }))
                 )
                 .sort((a: any, b: any) => a.order - b.order)
-                .slice(0, 4)
                 .map((menu: any, menuIndex: number) => (
-                  <div key={`${menu.settingId}-${menuIndex}`}>
-                    <h3 className="font-semibold text-gray-800 mb-3 text-sm sm:text-base">
+                  <div key={`${menu.settingId}-${menuIndex}`} className="min-w-0">
+                    <h3 className="font-semibold text-gray-800 mb-3 text-sm sm:text-base whitespace-nowrap">
                       {menu.menuTitle}
                     </h3>
                     <ul className="space-y-1.5 text-xs sm:text-sm text-gray-600">
                       {menu.submenus
                         .filter((submenu: any) => submenu.isActive)
                         .map((submenu: any, subIndex: number) => (
-                          <li key={subIndex}>
-                            {submenu.isDynamicPage ? (
-                              <Link 
-                                href={submenu.url} 
-                                className="hover:text-blue-600 transition-colors"
-                              >
-                                {submenu.title}
-                              </Link>
-                            ) : (
-                              <a 
-                                href={submenu.url} 
-                                className="hover:text-blue-600 transition-colors"
-                                {...(submenu.url.startsWith('http') && { target: '_blank', rel: 'noopener noreferrer' })}
-                              >
-                                {submenu.title}
-                              </a>
-                            )}
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                ))}
-            </div>
-
-            {/* Second Row - Remaining Menus + Social */}
-            <div className="flex flex-col sm:grid sm:grid-cols-3 gap-6">
-              {/* Remaining Dynamic Menus */}
-              {footerSettings
-                ?.flatMap((setting: any) => 
-                  setting.menus.map((menu: any) => ({ ...menu, settingId: setting._id }))
-                )
-                .sort((a: any, b: any) => a.order - b.order)
-                .slice(4)
-                .map((menu: any, menuIndex: number) => (
-                  <div key={`${menu.settingId}-${menuIndex}-remaining`}>
-                    <h3 className="font-semibold text-gray-800 mb-3 text-sm sm:text-base">
-                      {menu.menuTitle}
-                    </h3>
-                    <ul className="space-y-1.5 text-xs sm:text-sm text-gray-600">
-                      {menu.submenus
-                        .filter((submenu: any) => submenu.isActive)
-                        .map((submenu: any, subIndex: number) => (
-                          <li key={subIndex}>
+                          <li key={subIndex} className="whitespace-nowrap overflow-hidden text-ellipsis">
                             {submenu.isDynamicPage ? (
                               <Link 
                                 href={submenu.url} 
@@ -198,8 +155,8 @@ export default function BengaliFooter() {
                 ))}
 
               {/* Social & App Column */}
-              <div>
-                <h3 className="font-semibold text-gray-800 mb-3 text-sm sm:text-base">
+              <div className="min-w-0">
+                <h3 className="font-semibold text-gray-800 mb-3 text-sm sm:text-base whitespace-nowrap">
                   Stay Connected
                 </h3>
                 <div className="flex flex-wrap gap-2">

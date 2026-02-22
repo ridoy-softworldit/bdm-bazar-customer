@@ -67,7 +67,7 @@ export default function ProdCarousel() {
           }
         });
         
-        console.log('Book categories found:', Object.keys(grouped));
+         Object.keys(grouped);
         setCategories(grouped);
       } catch (err) {
         console.error(err);

@@ -4,7 +4,8 @@
 
 import { Button } from "@/components/ui/button";
 import { useAuthHandlers } from "@/lib/authActions";
-import { useFirebaseFacebookAuth } from "@/lib/useFirebaseFacebookAuth";
+import { setUser } from "@/redux/featured/auth/authSlice";
+import { useAppDispatch } from "@/redux/hooks";
 import { Eye, EyeOff } from "lucide-react";
 import { signIn } from "next-auth/react";
 import Image from "next/image";
@@ -12,6 +13,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import FacebookLogin from "react-facebook-login";
+import toast from "react-hot-toast";
+import axios from "axios";
 import InputField from "../shared/InputField";
 import Logo from "/public/logo.png";
 
@@ -33,7 +37,7 @@ export default function AuthForm({ type }: AuthFormProps) {
     formState: { errors },
   } = useForm<FormData>();
   const { handleRegister, handleLogin } = useAuthHandlers();
-  const { loginWithFacebook } = useFirebaseFacebookAuth();
+  const dispatch = useAppDispatch();
   const router = useRouter();
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -57,6 +61,33 @@ export default function AuthForm({ type }: AuthFormProps) {
     } catch (err: any) {
       console.error("❌ Login error:", err);
       setError(err.message || "Something went wrong");
+    }
+  };
+
+  const handleFacebookLogin = async (response: any) => {
+    console.log("📘 Facebook Response:", response);
+    if (response.accessToken) {
+      try {
+        const { data } = await axios.post(
+          `${process.env.NEXT_PUBLIC_BASE_API}/auth/login/provider`,
+          {
+            name: response.name,
+            email: response.email,
+            provider: "facebook",
+          }
+        );
+        console.log("📘 Backend Response:", data);
+        if (data.success) {
+          dispatch(setUser(data.data));
+          toast.success("Login successful!");
+          router.push(redirectUrl);
+        } else {
+          toast.error("Login failed");
+        }
+      } catch (error) {
+        console.error("❌ Facebook login error:", error);
+        toast.error("Facebook login failed");
+      }
     }
   };
 
@@ -146,17 +177,16 @@ export default function AuthForm({ type }: AuthFormProps) {
                 <Image src="/google.png" alt="Google" width={20} height={20} />
                 Google
               </Button>
-              <Button
-                variant={"outline"}
-                type="button"
-                onClick={loginWithFacebook}
-                className="flex-1 gap-2 bg-[#1877F2] text-white hover:bg-[#1877F2]/90 border-[#1877F2]"
-              >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                </svg>
-                Facebook
-              </Button>
+              <FacebookLogin
+                appId={process.env.NEXT_PUBLIC_FACEBOOK_APP_ID!}
+                autoLoad={false}
+                fields="name,email,picture"
+                callback={handleFacebookLogin}
+                redirectUri={typeof window !== 'undefined' ? window.location.origin : ''}
+                cssClass="flex-1 gap-2 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-[#1877F2] text-white hover:bg-[#1877F2]/90 h-10 px-4 py-2"
+                icon={<svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>}
+                textButton="Facebook"
+              />
             </div>
           </div>
         </form>
