@@ -1,25 +1,23 @@
 "use client";
 
-import { useState } from "react";
-import { useGetSingleUserQuery } from "@/redux/api/userApi";
+import { useState, useEffect } from "react";
+import { useGetSingleUserQuery, useUpdateUserMutation } from "@/redux/api/userApi";
 import { selectCurrentUser } from "@/redux/featured/auth/authSlice";
 import { useAppSelector } from "@/redux/hooks";
 import { Loader2, MapPin, Plus, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Swal from "sweetalert2";
+import toast from "react-hot-toast";
 
 interface Address {
-  _id?: string;
-  label: string;
-  name: string;
-  phone: string;
-  address: string;
-  city: string;
-  area: string;
-  zone: string;
+  label?: string;
+  fullAddress?: string;
+  city?: string;
+  district?: string;
+  area?: string;
+  zone?: string;
   postalCode?: string;
-  isDefault?: boolean;
 }
 
 const AddressesPage = () => {
@@ -28,23 +26,27 @@ const AddressesPage = () => {
   const { data: user, isLoading, isError } = useGetSingleUserQuery(userId, {
     skip: !userId,
   });
+  const [updateUser] = useUpdateUserMutation();
 
-  const [addresses, setAddresses] = useState<Address[]>(
-    user?.data?.addresses || []
-  );
+  const [address, setAddress] = useState<Address>(user?.data?.address || {});
 
-  const handleAddAddress = () => {
-    Swal.fire({
-      title: "Add New Address",
+  useEffect(() => {
+    if (user?.data?.address) {
+      setAddress(user.data.address);
+    }
+  }, [user]);
+
+  const handleSaveAddress = async () => {
+    const result = await Swal.fire({
+      title: address.label ? "Edit Address" : "Add Address",
       html: `
-        <input type="text" id="label" class="swal2-input" placeholder="Label (e.g. Home, Office)">
-        <input type="text" id="name" class="swal2-input" placeholder="Full Name">
-        <input type="text" id="phone" class="swal2-input" placeholder="Phone Number">
-        <input type="text" id="address" class="swal2-input" placeholder="Full Address">
-        <input type="text" id="city" class="swal2-input" placeholder="City/District">
-        <input type="text" id="area" class="swal2-input" placeholder="Area/Upazila">
-        <input type="text" id="zone" class="swal2-input" placeholder="Zone">
-        <input type="text" id="postal" class="swal2-input" placeholder="Postal Code">
+        <input type="text" id="label" class="swal2-input" value="${address.label || ""}" placeholder="Label (e.g. Home, Office)">
+        <input type="text" id="fullAddress" class="swal2-input" value="${address.fullAddress || ""}" placeholder="Full Address">
+        <input type="text" id="city" class="swal2-input" value="${address.city || ""}" placeholder="City">
+        <input type="text" id="district" class="swal2-input" value="${address.district || ""}" placeholder="District">
+        <input type="text" id="area" class="swal2-input" value="${address.area || ""}" placeholder="Area/Upazila">
+        <input type="text" id="zone" class="swal2-input" value="${address.zone || ""}" placeholder="Zone">
+        <input type="text" id="postalCode" class="swal2-input" value="${address.postalCode || ""}" placeholder="Postal Code">
       `,
       focusConfirm: false,
       showCancelButton: true,
@@ -52,38 +54,31 @@ const AddressesPage = () => {
       cancelButtonText: "Cancel",
       confirmButtonColor: "#2563eb",
       preConfirm: () => {
-        const newAddress: Address = {
+        return {
           label: (document.getElementById("label") as HTMLInputElement)?.value,
-          name: (document.getElementById("name") as HTMLInputElement)?.value,
-          phone: (document.getElementById("phone") as HTMLInputElement)?.value,
-          address: (document.getElementById("address") as HTMLInputElement)?.value,
+          fullAddress: (document.getElementById("fullAddress") as HTMLInputElement)?.value,
           city: (document.getElementById("city") as HTMLInputElement)?.value,
+          district: (document.getElementById("district") as HTMLInputElement)?.value,
           area: (document.getElementById("area") as HTMLInputElement)?.value,
           zone: (document.getElementById("zone") as HTMLInputElement)?.value,
-          postalCode: (document.getElementById("postal") as HTMLInputElement)?.value,
+          postalCode: (document.getElementById("postalCode") as HTMLInputElement)?.value,
         };
-
-        if (
-          !newAddress.name ||
-          !newAddress.phone ||
-          !newAddress.address ||
-          !newAddress.city
-        ) {
-          Swal.showValidationMessage("Please fill all required fields");
-          return false;
-        }
-        return newAddress;
       },
-    }).then((result) => {
-      if (result.isConfirmed && result.value) {
-        setAddresses((prev) => [...prev, result.value]);
-        Swal.fire("Added!", "Address successfully added.", "success");
-      }
     });
+
+    if (result.isConfirmed && result.value) {
+      try {
+        await updateUser({ id: userId, data: { address: result.value } }).unwrap();
+        setAddress(result.value);
+        toast.success("Address saved successfully!");
+      } catch {
+        toast.error("Failed to save address");
+      }
+    }
   };
 
-  const handleDelete = (id?: string) => {
-    Swal.fire({
+  const handleDelete = async () => {
+    const result = await Swal.fire({
       title: "Are you sure?",
       text: "You want to delete this address?",
       icon: "warning",
@@ -91,53 +86,17 @@ const AddressesPage = () => {
       confirmButtonText: "Yes, delete it!",
       confirmButtonColor: "#e11d48",
       cancelButtonText: "Cancel",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        setAddresses(addresses.filter((a) => a._id !== id));
-        Swal.fire("Deleted!", "Address has been removed.", "success");
-      }
     });
-  };
 
-  const handleEdit = (address: Address) => {
-    Swal.fire({
-      title: "Edit Address",
-      html: `
-        <input type="text" id="label" class="swal2-input" value="${address.label}" placeholder="Label">
-        <input type="text" id="name" class="swal2-input" value="${address.name}" placeholder="Full Name">
-        <input type="text" id="phone" class="swal2-input" value="${address.phone}" placeholder="Phone Number">
-        <input type="text" id="address" class="swal2-input" value="${address.address}" placeholder="Full Address">
-        <input type="text" id="city" class="swal2-input" value="${address.city}" placeholder="City/District">
-        <input type="text" id="area" class="swal2-input" value="${address.area}" placeholder="Area/Upazila">
-        <input type="text" id="zone" class="swal2-input" value="${address.zone}" placeholder="Zone">
-        <input type="text" id="postal" class="swal2-input" value="${address.postalCode || ""}" placeholder="Postal Code">
-      `,
-      focusConfirm: false,
-      showCancelButton: true,
-      confirmButtonText: "Update",
-      cancelButtonText: "Cancel",
-      confirmButtonColor: "#2563eb",
-      preConfirm: () => {
-        return {
-          ...address,
-          label: (document.getElementById("label") as HTMLInputElement)?.value,
-          name: (document.getElementById("name") as HTMLInputElement)?.value,
-          phone: (document.getElementById("phone") as HTMLInputElement)?.value,
-          address: (document.getElementById("address") as HTMLInputElement)?.value,
-          city: (document.getElementById("city") as HTMLInputElement)?.value,
-          area: (document.getElementById("area") as HTMLInputElement)?.value,
-          zone: (document.getElementById("zone") as HTMLInputElement)?.value,
-          postalCode: (document.getElementById("postal") as HTMLInputElement)?.value,
-        };
-      },
-    }).then((result) => {
-      if (result.isConfirmed && result.value) {
-        setAddresses((prev) =>
-          prev.map((a) => (a._id === address._id ? result.value : a))
-        );
-        Swal.fire("Updated!", "Address successfully updated.", "success");
+    if (result.isConfirmed) {
+      try {
+        await updateUser({ id: userId, data: { address: {} } }).unwrap();
+        setAddress({});
+        toast.success("Address deleted successfully!");
+      } catch {
+        toast.error("Failed to delete address");
       }
-    });
+    }
   };
 
   if (isLoading)
@@ -154,82 +113,80 @@ const AddressesPage = () => {
       </div>
     );
 
+  const hasAddress = address && Object.keys(address).length > 0 && address.fullAddress;
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold tracking-tight text-gray-800">
-          My Addresses
+          My Address
         </h1>
         <Button
-          onClick={handleAddAddress}
+          onClick={handleSaveAddress}
           className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
         >
-          <Plus className="h-4 w-4" /> Add New
+          <Plus className="h-4 w-4" /> {hasAddress ? "Edit" : "Add"}
         </Button>
       </div>
 
-      {/* Address Cards */}
-      {addresses.length === 0 ? (
+      {!hasAddress ? (
         <div className="text-center py-16 text-gray-500">
           <MapPin className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-          <p className="text-lg font-medium">No addresses found</p>
+          <p className="text-lg font-medium">No address found</p>
           <p className="text-sm text-gray-400">
-            Add your first shipping or billing address
+            Add your shipping or billing address
           </p>
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {addresses.map((address) => (
-            <Card
-              key={address._id || address.label}
-              className={`relative border-2 rounded-xl shadow-sm hover:shadow-md transition-all ${
-                address.isDefault ? "border-blue-500" : "border-gray-200"
-              }`}
-            >
-              <CardContent className="p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="font-semibold text-lg text-gray-800">
-                    {address.label || "Untitled"}
-                  </h2>
-                  {address.isDefault && (
-                    <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full font-medium">
-                      Default
-                    </span>
-                  )}
-                </div>
+        <Card className="border-2 border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold text-xl text-gray-800">
+                {address.label || "Address"}
+              </h2>
+            </div>
 
-                <p className="text-sm text-gray-700 mb-1">{address.name}</p>
-                <p className="text-sm text-gray-700 mb-1">{address.phone}</p>
-                <p className="text-sm text-gray-600 mb-1">{address.address}</p>
-                <p className="text-sm text-gray-600">
-                  {address.area}, {address.city}
-                </p>
-                {address.postalCode && (
-                  <p className="text-sm text-gray-500 mt-1">
-                    Postal Code: {address.postalCode}
-                  </p>
-                )}
+            {address.fullAddress && (
+              <p className="text-sm text-gray-700 mb-2">{address.fullAddress}</p>
+            )}
+            {address.area && (
+              <p className="text-sm text-gray-600 mb-1">Area: {address.area}</p>
+            )}
+            {address.city && (
+              <p className="text-sm text-gray-600 mb-1">City: {address.city}</p>
+            )}
+            {address.district && (
+              <p className="text-sm text-gray-600 mb-1">District: {address.district}</p>
+            )}
+            {address.zone && (
+              <p className="text-sm text-gray-600 mb-1">Zone: {address.zone}</p>
+            )}
+            {address.postalCode && (
+              <p className="text-sm text-gray-500 mt-2">
+                Postal Code: {address.postalCode}
+              </p>
+            )}
 
-                <div className="flex justify-end gap-3 mt-4">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => handleEdit(address)}
-                  >
-                    <Edit className="h-4 w-4 text-blue-600" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => handleDelete(address._id)}
-                  >
-                    <Trash2 className="h-4 w-4 text-red-600" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+            <div className="flex justify-end gap-3 mt-6">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleSaveAddress}
+                className="flex items-center gap-2"
+              >
+                <Edit className="h-4 w-4" /> Edit
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleDelete}
+                className="flex items-center gap-2 text-red-600 hover:text-red-700"
+              >
+                <Trash2 className="h-4 w-4" /> Delete
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

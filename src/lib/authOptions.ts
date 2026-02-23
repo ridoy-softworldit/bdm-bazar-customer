@@ -47,6 +47,7 @@ export const authOptions: NextAuthOptions = {
           walletPoint: json.data.walletPoint,
           contactNo: json.data.contactNo,
           bio: json.data.bio,
+          accessToken: json.data.accessToken || json.accessToken,
         };
       },
     }),
@@ -85,6 +86,7 @@ export const authOptions: NextAuthOptions = {
           }
           
           const json = await res.json();
+          console.log('🔍 Provider login response:', json);
 
           if (json.success && json.data) {
             const dbUser = json.data;
@@ -94,6 +96,7 @@ export const authOptions: NextAuthOptions = {
             user.walletPoint = dbUser.walletPoint || 0;
             user.contactNo = dbUser.contactNo;
             user.bio = dbUser.bio;
+            user.accessToken = dbUser.accessToken || json.accessToken;
             return true;
           }
           
@@ -116,6 +119,7 @@ export const authOptions: NextAuthOptions = {
         token.walletPoint = user.walletPoint;
         token.contactNo = user.contactNo;
         token.bio = user.bio;
+        token.accessToken = user.accessToken;
       }
       return token;
     },
@@ -129,6 +133,7 @@ export const authOptions: NextAuthOptions = {
         session.user.walletPoint = token.walletPoint as number;
         session.user.contactNo = token.contactNo as string;
         session.user.bio = token.bio as string;
+        session.user.accessToken = token.accessToken as string;
       }
       return session;
     },

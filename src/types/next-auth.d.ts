@@ -10,6 +10,7 @@ declare module 'next-auth' {
     walletPoint?: number;
     contactNo?: string;
     bio?: string;
+    accessToken?: string;
   }
 
   interface Session {
@@ -27,5 +28,6 @@ declare module 'next-auth/jwt' {
     walletPoint?: number;
     contactNo?: string;
     bio?: string;
+    accessToken?: string;
   }
 }

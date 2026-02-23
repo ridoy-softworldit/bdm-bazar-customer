@@ -12,6 +12,7 @@ export default function AuthSync() {
   useEffect(() => {
     const syncSession = async () => {
       const session = await getSession();
+      console.log('🔍 Session data:', session);
       
       if (session?.user) {
         const userData = {
@@ -23,7 +24,12 @@ export default function AuthSync() {
           gender: session.user.gender,
           walletPoint: session.user.walletPoint,
         };
-        dispatch(setUser(userData));
+        const token = (session.user as { accessToken?: string }).accessToken;
+        console.log('🔍 Token from session:', token);
+        dispatch(setUser({ 
+          user: userData, 
+          token: token || null 
+        }));
       }
     };
 
