@@ -40,19 +40,80 @@ const AddressesPage = () => {
     const result = await Swal.fire({
       title: address.label ? "Edit Address" : "Add Address",
       html: `
-        <input type="text" id="label" class="swal2-input" value="${address.label || ""}" placeholder="Label (e.g. Home, Office)">
-        <input type="text" id="fullAddress" class="swal2-input" value="${address.fullAddress || ""}" placeholder="Full Address">
-        <input type="text" id="city" class="swal2-input" value="${address.city || ""}" placeholder="City">
-        <input type="text" id="district" class="swal2-input" value="${address.district || ""}" placeholder="District">
-        <input type="text" id="area" class="swal2-input" value="${address.area || ""}" placeholder="Area/Upazila">
-        <input type="text" id="zone" class="swal2-input" value="${address.zone || ""}" placeholder="Zone">
-        <input type="text" id="postalCode" class="swal2-input" value="${address.postalCode || ""}" placeholder="Postal Code">
+        <style>
+          .address-form { text-align: left; padding: 0 8px; }
+          .form-group { margin-bottom: 12px; }
+          .form-label { display: block; font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 4px; }
+          .form-input { width: 100%; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; transition: border-color 0.2s; box-sizing: border-box; }
+          .form-input:focus { outline: none; border-color: #2563eb; }
+          @media (max-width: 640px) {
+            .form-label { font-size: 12px; }
+            .form-input { padding: 7px 10px; font-size: 13px; }
+          }
+        </style>
+        <div class="address-form">
+          <div class="form-group">
+            <label class="form-label">Label</label>
+            <input type="text" id="label" class="form-input" value="${address.label || ""}" placeholder="e.g. Home, Office">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Full Address</label>
+            <input type="text" id="fullAddress" class="form-input" value="${address.fullAddress || ""}" placeholder="Enter full address">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Area/Upazila</label>
+            <input type="text" id="area" class="form-input" value="${address.area || ""}" placeholder="Enter area">
+          </div>
+          <div class="form-group">
+            <label class="form-label">City</label>
+            <input type="text" id="city" class="form-input" value="${address.city || ""}" placeholder="Enter city">
+          </div>
+          <div class="form-group">
+            <label class="form-label">District</label>
+            <input type="text" id="district" class="form-input" value="${address.district || ""}" placeholder="Enter district">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Zone</label>
+            <input type="text" id="zone" class="form-input" value="${address.zone || ""}" placeholder="Enter zone">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Postal Code</label>
+            <input type="text" id="postalCode" class="form-input" value="${address.postalCode || ""}" placeholder="Enter postal code">
+          </div>
+        </div>
       `,
+      width: '500px',
+      showCloseButton: true,
       focusConfirm: false,
       showCancelButton: true,
-      confirmButtonText: "Save",
+      confirmButtonText: "Save Address",
       cancelButtonText: "Cancel",
       confirmButtonColor: "#2563eb",
+      cancelButtonColor: "#6b7280",
+      customClass: {
+        popup: 'swal-compact',
+        title: 'swal-title-compact',
+        htmlContainer: 'swal-html-compact'
+      },
+      didOpen: () => {
+        const popup = document.querySelector('.swal2-popup') as HTMLElement;
+        if (popup) {
+          popup.style.maxWidth = '500px';
+          popup.style.width = '90%';
+        }
+        const style = document.createElement('style');
+        style.textContent = `
+          .swal-compact { padding: 20px !important; }
+          .swal-title-compact { font-size: 18px !important; margin-bottom: 16px !important; }
+          .swal-html-compact { margin: 0 !important; padding: 0 !important; }
+          .swal2-close { font-size: 28px !important; }
+          @media (max-width: 640px) {
+            .swal-compact { padding: 16px !important; }
+            .swal-title-compact { font-size: 16px !important; }
+          }
+        `;
+        document.head.appendChild(style);
+      },
       preConfirm: () => {
         return {
           label: (document.getElementById("label") as HTMLInputElement)?.value,
