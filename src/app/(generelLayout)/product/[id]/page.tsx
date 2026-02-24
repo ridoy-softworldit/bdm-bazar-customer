@@ -44,8 +44,11 @@ export default function BookProductPage({ params }: BookProductPageProps) {
     e.preventDefault();
     if (!session?.user) return toast.error("Please log in first");
 
+    const userId = (session.user as any).id || (session.user as any)._id;
+    if (!userId) return toast.error("User ID not found");
+
     const formData = new FormData();
-    formData.append("user", (session.user as any).id);
+    formData.append("user", userId);
     formData.append("product", id);
     formData.append("rating", rating.toString());
     formData.append("description", description);
