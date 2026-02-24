@@ -86,7 +86,6 @@ export const authOptions: NextAuthOptions = {
           }
           
           const json = await res.json();
-          console.log('🔍 Provider login response:', json);
 
           if (json.success && json.data) {
             const dbUser = json.data;

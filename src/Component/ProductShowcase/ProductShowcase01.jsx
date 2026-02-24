@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
@@ -82,9 +83,11 @@ const ProductShowcase01 = ({ title, products }) => {
 
               {/* Image & Hover */}
               <div className=" flex items-center justify-center h-36 mt-6">
-                <img
+                <Image
                   src={product.image}
                   alt={product.name}
+                  width={160}
+                  height={160}
                   className="h-40 object-contain"
                 />
                 <div className="absolute inset-0 bg-white/70 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition duration-500 ease-in-out transform">

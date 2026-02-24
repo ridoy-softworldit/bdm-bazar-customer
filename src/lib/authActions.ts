@@ -60,13 +60,16 @@ export function useAuthHandlers() {
 
       // Dispatch user to Redux with proper mapping
       const userData = {
-        _id: session.user.id,
-        id: session.user.id,
-        name: session.user.name,
-        email: session.user.email,
-        role: session.user.role,
-        gender: session.user.gender,
-        walletPoint: session.user.walletPoint,
+        user: {
+          _id: session.user.id,
+          id: session.user.id,
+          name: session.user.name,
+          email: session.user.email,
+          role: session.user.role,
+          gender: session.user.gender,
+          walletPoint: session.user.walletPoint,
+        },
+        token: session.user.accessToken,
       };
       dispatch(setUser(userData));
       toast.success("Login successful!");

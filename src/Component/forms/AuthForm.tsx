@@ -80,7 +80,7 @@ export default function AuthForm({ type }: AuthFormProps) {
           }
         );
         if (data.success) {
-          dispatch(setUser(data.data));
+          dispatch(setUser({ user: data.data, token: data.data.accessToken }));
           toast.success("Login successful!");
           router.push(redirectUrl);
         } else {

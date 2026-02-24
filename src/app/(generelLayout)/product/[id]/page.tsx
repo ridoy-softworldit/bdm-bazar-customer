@@ -17,6 +17,8 @@ import {
 import { Star } from "lucide-react";
 import Image from "next/image";
 import toast from "react-hot-toast";
+import { useAppSelector } from "@/redux/hooks";
+import { selectCurrentUser } from "@/redux/featured/auth/authSlice";
 
 interface BookProductPageProps {
   params: Promise<{ id: string }>;
@@ -30,6 +32,7 @@ export default function BookProductPage({ params }: BookProductPageProps) {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { data: session } = useSession();
+  const user = useAppSelector(selectCurrentUser);
   const { data: approvedReviews } = useGetApprovedReviewsByProductQuery(id);
 
   const [createReview] = useCreateReviewMutation();
@@ -42,9 +45,11 @@ export default function BookProductPage({ params }: BookProductPageProps) {
 
   const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!session?.user) return toast.error("Please log in first");
+    
+    const isLoggedIn = session?.user || user;
+    if (!isLoggedIn) return toast.error("Please log in first");
 
-    const userId = (session.user as any).id || (session.user as any)._id;
+    const userId = (session?.user as any)?.id || (session?.user as any)?._id || user?._id || user?.id;
     if (!userId) return toast.error("User ID not found");
 
     const formData = new FormData();

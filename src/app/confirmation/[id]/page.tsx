@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { CheckCircle, Info, Loader2 } from "lucide-react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 // Define TypeScript interfaces based on the provided data structure
 interface TotalAmount {
@@ -205,7 +206,7 @@ export default function OrderConfirmation() {
                 <div className="space-y-3">
                   {orderInfo.map((item, index) => (
                     <div key={index} className="flex gap-3 p-3 bg-gray-50 rounded-lg">
-                      <img src={item.productInfo.featuredImg} alt={item.productInfo.description.name} className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded" />
+                      <Image src={item.productInfo.featuredImg} alt={item.productInfo.description.name} width={80} height={80} className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded" />
                       <div className="flex-1">
                         <h3 className="font-medium text-sm sm:text-base text-gray-900">{item.productInfo.description.name}</h3>
                         <p className="text-xs sm:text-sm text-gray-600">Quantity: {item.quantity}</p>

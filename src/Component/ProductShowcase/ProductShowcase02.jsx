@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 const ProductShowcase02 = ({ title, products }) => {
   const showcaseRef = useRef(null);
@@ -59,9 +60,11 @@ const ProductShowcase02 = ({ title, products }) => {
               className="flex-shrink-0  cursor-pointer w-40  overflow-hidden  bg-white relative group"
             >
               <div className="flex bg-[#F5F5F5] justify-center p-4">
-                <img
+                <Image
                   src={product.image}
                   alt={product.name}
+                  width={112}
+                  height={112}
                   className="h-28 object-contain"
                 />
               </div>

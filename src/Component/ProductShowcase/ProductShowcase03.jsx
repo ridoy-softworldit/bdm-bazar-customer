@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 
 
@@ -65,7 +66,7 @@ const ProductShowcase03 = ({title , categories}) => {
             className="hover:text-blue-600 flex flex-col items-center  min-w-[150px] cursor-pointer"
           >
             <div className="w-32 bg-[#F5F5F5] h-32 rounded-full border border-blue-300 flex items-center justify-center">
-              <img src={cat.img} alt={cat.name} className="w-12 h-12 object-contain" />
+              <Image src={cat.img} alt={cat.name} width={48} height={48} className="w-12 h-12 object-contain" />
             </div>
             <p className="text-base mt-2 text-center">{cat.name}</p>
           </Link>
