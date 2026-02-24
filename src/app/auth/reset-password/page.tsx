@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Lock, CheckCircle, AlertCircle } from "lucide-react";
+import { Loader2, Lock, CheckCircle, AlertCircle, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -18,6 +18,10 @@ export default function ResetPasswordPage() {
   const [formData, setFormData] = useState({
     newPassword: "",
     confirmPassword: ""
+  });
+  const [showPasswords, setShowPasswords] = useState({
+    new: false,
+    confirm: false
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -66,7 +70,7 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className=" bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <Link href="/">
@@ -93,15 +97,22 @@ export default function ResetPasswordPage() {
               <div className="relative">
                 <Input
                   id="newPassword"
-                  type="password"
+                  type={showPasswords.new ? "text" : "password"}
                   value={formData.newPassword}
                   onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
-                  className="pl-10"
-                  placeholder="••••••••"
+                  className="pl-10 pr-10"
+                  placeholder="Enter new password"
                   required
                   minLength={6}
                 />
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <button
+                  type="button"
+                  onClick={() => setShowPasswords({ ...showPasswords, new: !showPasswords.new })}
+                  className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                >
+                  {showPasswords.new ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
             </div>
 
@@ -110,14 +121,21 @@ export default function ResetPasswordPage() {
               <div className="relative">
                 <Input
                   id="confirmPassword"
-                  type="password"
+                  type={showPasswords.confirm ? "text" : "password"}
                   value={formData.confirmPassword}
                   onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                  className="pl-10"
-                  placeholder="••••••••"
+                  className="pl-10 pr-10"
+                  placeholder="Confirm new password"
                   required
                 />
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <button
+                  type="button"
+                  onClick={() => setShowPasswords({ ...showPasswords, confirm: !showPasswords.confirm })}
+                  className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                >
+                  {showPasswords.confirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
             </div>
 

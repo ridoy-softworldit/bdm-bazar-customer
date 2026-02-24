@@ -95,7 +95,7 @@ export default function AuthForm({ type }: AuthFormProps) {
 
   return (
     <section
-      className="py-8 md:py-16 lg:py-24 mx-auto overflow-hidden flex flex-col
+      className="py-6 md:py-8 lg:py-12 mx-auto overflow-hidden flex flex-col
      w-full max-w-[350px] sm:max-w-md md:max-w-[450px] lg:max-w-[666px] px-4 sm:px-8"
     >
       <Link href={"/"}>
@@ -108,7 +108,7 @@ export default function AuthForm({ type }: AuthFormProps) {
           />
         </div>
       </Link>
-      <h2 className="my-6 capitalize text-center text-xl md:text-2xl">{type} to dashboard</h2>
+      <h2 className="my-6 capitalize text-center text-xl md:text-2xl">{type} to user account dashboard</h2>
       <div className="bg-white border px-4 sm:px-5 py-5 border-gray-300 rounded-lg text-black">
         {/* form */}
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">

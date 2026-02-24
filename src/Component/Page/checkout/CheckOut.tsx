@@ -14,6 +14,7 @@ import ShippingAddress, { CustomerInfo } from "./ShippingAddress";
 import CheckoutOptions from "./CheckoutOptions";
 import useSettings from "@/hooks/useSettings";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 // Zod Schema
 const objectIdSchema = z
@@ -124,14 +125,16 @@ const CheckOut: React.FC = () => {
   );
   const dispatch = useDispatch();
   const user = useAppSelector(selectCurrentUser);
+  const { data: session } = useSession();
   const [checkoutType, setCheckoutType] = useState<"guest" | "user" | null>(null);
   
   // Auto-detect if user is logged in and set checkout type
   useEffect(() => {
-    if (user?._id && checkoutType === null) {
+    const isLoggedIn = user?._id || session?.user?.id;
+    if (isLoggedIn && checkoutType === null) {
       setCheckoutType("user");
     }
-  }, [user, checkoutType]);
+  }, [user, session, checkoutType]);
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo>({
     pickupLocation: "home",
     firstName: "",

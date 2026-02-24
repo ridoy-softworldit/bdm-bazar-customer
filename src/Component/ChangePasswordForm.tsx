@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Lock, CheckCircle, AlertCircle } from "lucide-react";
+import { Loader2, Lock, CheckCircle, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 export default function ChangePasswordForm() {
@@ -17,6 +17,11 @@ export default function ChangePasswordForm() {
     oldPassword: "",
     newPassword: "",
     confirmPassword: ""
+  });
+  const [showPasswords, setShowPasswords] = useState({
+    old: false,
+    new: false,
+    confirm: false
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -59,14 +64,21 @@ export default function ChangePasswordForm() {
           <div className="relative">
             <Input
               id="current"
-              type="password"
+              type={showPasswords.old ? "text" : "password"}
               value={formData.oldPassword}
               onChange={(e) => setFormData({ ...formData, oldPassword: e.target.value })}
-              className="pl-10"
-              placeholder="••••••••"
+              className="pl-10 pr-10"
+              placeholder="Enter current password"
               required
             />
             <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <button
+              type="button"
+              onClick={() => setShowPasswords({ ...showPasswords, old: !showPasswords.old })}
+              className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+            >
+              {showPasswords.old ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
           </div>
         </div>
 
@@ -75,14 +87,21 @@ export default function ChangePasswordForm() {
           <div className="relative">
             <Input
               id="new"
-              type="password"
+              type={showPasswords.new ? "text" : "password"}
               value={formData.newPassword}
               onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
-              className="pl-10"
-              placeholder="••••••••"
+              className="pl-10 pr-10"
+              placeholder="Enter new password"
               required
             />
             <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <button
+              type="button"
+              onClick={() => setShowPasswords({ ...showPasswords, new: !showPasswords.new })}
+              className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+            >
+              {showPasswords.new ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
           </div>
         </div>
 
@@ -91,14 +110,21 @@ export default function ChangePasswordForm() {
           <div className="relative">
             <Input
               id="confirm"
-              type="password"
+              type={showPasswords.confirm ? "text" : "password"}
               value={formData.confirmPassword}
               onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-              className="pl-10"
-              placeholder="••••••••"
+              className="pl-10 pr-10"
+              placeholder="Confirm new password"
               required
             />
             <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <button
+              type="button"
+              onClick={() => setShowPasswords({ ...showPasswords, confirm: !showPasswords.confirm })}
+              className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+            >
+              {showPasswords.confirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
           </div>
         </div>
 

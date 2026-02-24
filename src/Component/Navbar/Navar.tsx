@@ -362,6 +362,12 @@ export default function Navbar({ isMobileMenuOpen, setIsMobileMenuOpen }: Navbar
                           Dashboard
                         </Link>
                       </DropdownMenuItem>
+                      <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 cursor-pointer">
+                        <User className="h-4 w-4" />
+                        <Link href="/dashboard/profile" className="w-full">
+                          Profile
+                        </Link>
+                      </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={handleLogout}
                         className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 cursor-pointer text-red-600"
