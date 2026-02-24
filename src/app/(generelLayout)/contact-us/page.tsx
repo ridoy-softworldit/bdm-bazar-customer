@@ -1,11 +1,13 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Mail, Phone, MapPin, Send, CheckCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import emailjs from '@emailjs/browser';
+import useSettings from "@/hooks/useSettings";
 
 export default function ContactForm() {
+  const { settings } = useSettings();
+  const contactInfo = settings?.data?.contactAndSocial;
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -15,21 +17,7 @@ export default function ContactForm() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-
   const [error, setError] = useState("");
-
-  // EmailJS Configuration
-// src/config/emailConfig.ts
- const EMAILJS_CONFIG = {
-  PUBLIC_KEY: process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || "",
-  SERVICE_ID: process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || "",
-  TEMPLATE_ID: process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || "",
-};
-
-
-  useEffect(() => {
-    emailjs.init(EMAILJS_CONFIG.PUBLIC_KEY);
-  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -72,37 +60,30 @@ export default function ContactForm() {
     setIsSubmitting(true);
     
     try {
-      const templateParams = {
-        from_name: formData.name,
-        from_email: formData.email,
-        phone: formData.phone || "Not provided",
-        subject: formData.subject,
-        message: formData.message,
-        to_name: "Rokomari Support",
-        reply_to: formData.email
-      };
-
-      const response = await emailjs.send(
-        EMAILJS_CONFIG.SERVICE_ID,
-        EMAILJS_CONFIG.TEMPLATE_ID,
-        templateParams
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_API}/contact/send-message`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        }
       );
       
-      if (response.status === 200) {
+      const data = await response.json();
+      
+      if (data.success) {
         setIsSuccess(true);
         setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
         
-        // Reset success state after 5 seconds
         setTimeout(() => {
           setIsSuccess(false);
         }, 5000);
+      } else {
+        setError(data.message || "Failed to send message. Please try again.");
       }
-    } catch (error: unknown) {
-      console.error('EmailJS Error:', error);
-      const errorMessage = error && typeof error === 'object' && 'text' in error 
-        ? (error as { text: string }).text 
-        : "Failed to send message. Please check your internet connection and try again.";
-      setError(errorMessage);
+    } catch (error) {
+      console.error('Contact form error:', error);
+      setError("Failed to send message. Please check your internet connection and try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -128,8 +109,7 @@ export default function ContactForm() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-1">Phone</h3>
-                    <p className="text-gray-600 text-sm">+880 1234-567890</p>
-                    <p className="text-gray-600 text-sm">+880 1987-654321</p>
+                    <p className="text-gray-600 text-sm">{contactInfo?.phone || "Not available"}</p>
                   </div>
                 </div>
               </CardContent>
@@ -143,8 +123,7 @@ export default function ContactForm() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
-                    <p className="text-gray-600 text-sm">support@bookstore.com</p>
-                    <p className="text-gray-600 text-sm">info@bookstore.com</p>
+                    <p className="text-gray-600 text-sm break-all">{contactInfo?.email || "Not available"}</p>
                   </div>
                 </div>
               </CardContent>
@@ -158,8 +137,7 @@ export default function ContactForm() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-1">Address</h3>
-                    <p className="text-gray-600 text-sm">123 Book Street</p>
-                    <p className="text-gray-600 text-sm">Dhaka 1205, Bangladesh</p>
+                    <p className="text-gray-600 text-sm">{contactInfo?.address || "Not available"}</p>
                   </div>
                 </div>
               </CardContent>
