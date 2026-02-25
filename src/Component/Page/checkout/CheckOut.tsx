@@ -201,12 +201,31 @@ const CheckOut: React.FC = () => {
       return;
     }
 
-    // Validate email is required for logged-in users
-    if (checkoutType === "user" && !customerInfo.email) {
+    // Validate detailed address is required
+    if (!customerInfo.address || customerInfo.address.trim() === "") {
       Swal.fire({
         icon: "error",
-        title: "Email Required",
-        text: "Email address is required for user checkout.",
+        title: "Address Required",
+        text: "Please fill in the detailed address field.",
+        confirmButtonColor: "#3085d6",
+      });
+      return;
+    }
+
+    // Validate all required fields
+    const missingFields = [];
+    if (!customerInfo.firstName) missingFields.push("First Name");
+    if (!customerInfo.lastName) missingFields.push("Last Name");
+    if (!customerInfo.phone) missingFields.push("Phone Number");
+    if (!customerInfo.city) missingFields.push("District");
+    if (!customerInfo.area) missingFields.push("Upazila");
+    if (!customerInfo.zone) missingFields.push("Zone");
+    
+    if (missingFields.length > 0) {
+      Swal.fire({
+        icon: "error",
+        title: "Required Fields Missing",
+        text: `Please fill in: ${missingFields.join(", ")}`,
         confirmButtonColor: "#3085d6",
       });
       return;
@@ -239,20 +258,23 @@ const CheckOut: React.FC = () => {
       customerInfo: {
         firstName: customerInfo.firstName,
         lastName: customerInfo.lastName,
-        email: checkoutType === "user" && user?.email ? user.email : customerInfo.email || "guest@example.com",
+        email: customerInfo.email || "guest@example.com",
         phone: customerInfo.phone,
         address: `${customerInfo.address}, ${customerInfo.area}, ${customerInfo.city}`,
         city: customerInfo.city,
         area: customerInfo.area,
         postalCode: customerInfo.postalCode || "1205",
         country: customerInfo.country,
-        pickupLocation: customerInfo.pickupLocation, // ✅ Added
-        zone: customerInfo.city || "Dhaka", // ✅ Added (using city as zone, adjust as needed)
+        pickupLocation: customerInfo.pickupLocation,
+        zone: customerInfo.zone || customerInfo.city || "Dhaka",
       },
       paymentInfo: "cash-on" as const,
       deliveryCharge: deliveryCharge,
       totalAmount: subtotal + deliveryCharge,
     };
+
+    console.log("Email being sent:", customerInfo.email);
+    console.log("Full payload:", payload);
 
     const result = createOrderZodSchema.safeParse(payload);
     if (!result.success) {
