@@ -46,6 +46,10 @@ interface ShippingAddressProps {
   customerInfo: CustomerInfo;
   setCustomerInfo: (info: CustomerInfo) => void;
   isGuestCheckout?: boolean;
+  userName?: string;
+  userEmail?: string;
+  userPhone?: string;
+  triggerValidation?: boolean;
 }
 
 const selectArrow = `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' viewBox='0 0 12 12'%3e%3cpath stroke='%236B7280' stroke-linecap='round' stroke-width='1.5' d='m3 4.5 3 3 3-3'/%3e%3c/svg%3e")`;
@@ -463,12 +467,53 @@ export default function ShippingAddress({
   customerInfo,
   setCustomerInfo,
   isGuestCheckout = false,
+  userName,
+  userEmail,
+  userPhone,
+  triggerValidation = false,
 }: ShippingAddressProps) {
   const [districts, setDistricts] = useState<District[]>([]);
   const [upazilas, setUpazilas] = useState<Upazila[]>([]);
   const [unions, setUnions] = useState<Union[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
+
+  // Trigger validation for all required fields when submit is clicked
+  useEffect(() => {
+    if (triggerValidation) {
+      const requiredFields = ['firstName', 'lastName', 'phone', 'city', 'area', 'zone', 'address'];
+      if (!isGuestCheckout) requiredFields.push('email');
+      const allTouched = requiredFields.reduce((acc, field) => ({ ...acc, [field]: true }), {});
+      setTouched(allTouched);
+    }
+  }, [triggerValidation, isGuestCheckout]);
+
+  const getFieldClass = (fieldName: string, value: string | undefined, isRequired: boolean = true) => {
+    if (!isRequired) return "mt-1 block w-full border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-sm p-2";
+    if (!touched[fieldName]) return "mt-1 block w-full border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-sm p-2";
+    return value && value.trim() !== "" 
+      ? "mt-1 block w-full border-2 border-green-500 rounded-md focus:border-green-500 focus:ring-1 focus:ring-green-500 sm:text-sm p-2"
+      : "mt-1 block w-full border-2 border-red-500 rounded-md focus:border-red-500 focus:ring-1 focus:ring-red-500 sm:text-sm p-2";
+  };
+
+  const handleBlur = (fieldName: string) => {
+    setTouched(prev => ({ ...prev, [fieldName]: true }));
+  };
+
+  // Auto-fill user data for logged-in users
+  useEffect(() => {
+    if (!isGuestCheckout && (userName || userEmail || userPhone)) {
+      const nameParts = userName?.split(" ") || [];
+      setCustomerInfo({
+        ...customerInfo,
+        firstName: nameParts[0] || customerInfo.firstName,
+        lastName: nameParts.slice(1).join(" ") || customerInfo.lastName,
+        email: userEmail || customerInfo.email,
+        phone: userPhone || customerInfo.phone,
+      });
+    }
+  }, [isGuestCheckout, userName, userEmail, userPhone]);
 
   // Fetch districts on component mount
   useEffect(() => {
@@ -791,15 +836,16 @@ export default function ShippingAddress({
               htmlFor="firstName"
               className="block text-sm font-medium text-gray-700"
             >
-              First Name *
+              First Name <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               id="firstName"
               value={customerInfo.firstName}
               onChange={handleChange}
+              onBlur={() => handleBlur('firstName')}
               required
-              className="mt-1 block w-full border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-sm p-2"
+              className={getFieldClass('firstName', customerInfo.firstName)}
             />
           </div>
           <div>
@@ -807,39 +853,20 @@ export default function ShippingAddress({
               htmlFor="lastName"
               className="block text-sm font-medium text-gray-700"
             >
-              Last Name *
+              Last Name <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               id="lastName"
               value={customerInfo.lastName}
               onChange={handleChange}
+              onBlur={() => handleBlur('lastName')}
               required
-              className="mt-1 block w-full border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-sm p-2"
+              className={getFieldClass('lastName', customerInfo.lastName)}
             />
           </div>
         </div>
         
-        {/* Email field for guest checkout */}
-        {isGuestCheckout && (
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Email Address *
-            </label>
-            <input
-              type="email"
-              id="email"
-              value={customerInfo.email || ""}
-              onChange={handleChange}
-              required
-              placeholder="your@email.com"
-              className="mt-1 block w-full border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-sm p-2"
-            />
-          </div>
-        )}
         {/* Phone numbers */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
@@ -847,16 +874,17 @@ export default function ShippingAddress({
               htmlFor="phone"
               className="block text-sm font-medium text-gray-700"
             >
-              Phone No *
+              Phone No <span className="text-red-500">*</span>
             </label>
             <input
               type="tel"
               id="phone"
               value={customerInfo.phone}
               onChange={handleChange}
+              onBlur={() => handleBlur('phone')}
               placeholder="+880 1234567890"
               required
-              className="mt-1 block w-full border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-sm p-2"
+              className={getFieldClass('phone', customerInfo.phone)}
             />
           </div>
           <div>
@@ -864,7 +892,7 @@ export default function ShippingAddress({
               htmlFor="altPhone"
               className="block text-sm font-medium text-gray-700"
             >
-              Alternative Phone No
+              Alternative Phone No <span className="text-gray-500">(optional)</span>
             </label>
             <input
               type="tel"
@@ -876,6 +904,26 @@ export default function ShippingAddress({
             />
           </div>
         </div>
+        
+        {/* Email field - required for logged-in users, optional for guests */}
+        <div>
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Email Address {!isGuestCheckout ? <span className="text-red-500">*</span> : <span className="text-gray-500">(optional)</span>}
+          </label>
+          <input
+            type="email"
+            id="email"
+            value={customerInfo.email || ""}
+            onChange={handleChange}
+            onBlur={() => handleBlur('email')}
+            required={!isGuestCheckout}
+            placeholder="your@email.com"
+            className={getFieldClass('email', customerInfo.email, !isGuestCheckout)}
+          />
+        </div>
 
         {/* Address selectors */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
@@ -885,7 +933,7 @@ export default function ShippingAddress({
               htmlFor="country"
               className="block text-sm font-medium text-gray-700"
             >
-              Country *
+              Country <span className="text-red-500">*</span>
             </label>
             <select
               id="country"
@@ -905,16 +953,17 @@ export default function ShippingAddress({
               htmlFor="city"
               className="block text-sm font-medium text-gray-700"
             >
-              District *
+              District <span className="text-red-500">*</span>
             </label>
             <select
               id="city"
               value={customerInfo.city}
               onChange={handleChange}
+              onBlur={() => handleBlur('city')}
               style={selectStyle}
               disabled={loading && districts.length === 0}
               required
-              className="appearance-none mt-1 block w-full border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-sm p-2 bg-white disabled:bg-gray-100"
+              className={`appearance-none ${getFieldClass('city', customerInfo.city)} bg-white disabled:bg-gray-100`}
             >
               <option value="">Select District</option>
               {districts.map((district) => (
@@ -931,18 +980,19 @@ export default function ShippingAddress({
               htmlFor="area"
               className="block text-sm font-medium text-gray-700"
             >
-              Upazila *
+              Upazila <span className="text-red-500">*</span>
             </label>
             <select
               id="area"
               value={customerInfo.area}
               onChange={handleChange}
+              onBlur={() => handleBlur('area')}
               style={selectStyle}
               disabled={
                 !customerInfo.city || (loading && upazilas.length === 0)
               }
               required
-              className="appearance-none mt-1 block w-full border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-sm p-2 bg-white disabled:bg-gray-100"
+              className={`appearance-none ${getFieldClass('area', customerInfo.area)} bg-white disabled:bg-gray-100`}
             >
               <option value="">Select Upazila</option>
               {upazilas.map((upazila) => (
@@ -959,16 +1009,17 @@ export default function ShippingAddress({
               htmlFor="zone"
               className="block text-sm font-medium text-gray-700"
             >
-              Zone *
+              Zone <span className="text-red-500">*</span>
             </label>
             <select
               id="zone"
               value={customerInfo.zone}
               onChange={handleChange}
+              onBlur={() => handleBlur('zone')}
               style={selectStyle}
               disabled={!customerInfo.area || (loading && unions.length === 0)}
               required
-              className="appearance-none mt-1 block w-full border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-sm p-2 bg-white disabled:bg-gray-100"
+              className={`appearance-none ${getFieldClass('zone', customerInfo.zone)} bg-white disabled:bg-gray-100`}
             >
               <option value="">Select Zone</option>
               {unions.map((union) => (
@@ -987,16 +1038,17 @@ export default function ShippingAddress({
             htmlFor="address"
             className="block text-sm font-medium text-gray-700"
           >
-            Detailed Address *
+            Detailed Address <span className="text-red-500">*</span>
           </label>
           <textarea
             id="address"
             value={customerInfo.address}
             onChange={handleChange}
+            onBlur={() => handleBlur('address')}
             rows={4}
             placeholder="আপনার ফ্ল্যাট, সড়ক, পাড়া-মহল্লার নাম, পরিচিতির এলাকা উল্লেখ করুন"
             required
-            className="mt-1 block w-full border border-gray-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-sm p-2"
+            className={getFieldClass('address', customerInfo.address)}
           />
         </div>
       </div>

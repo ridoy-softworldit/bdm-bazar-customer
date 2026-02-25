@@ -36,7 +36,7 @@ const totalAmountZodSchema = z.object({
 const customerInfoZodSchema = z.object({
   firstName: z.string().min(1, "First name is required!"),
   lastName: z.string().min(1, "Last name is required!"),
-  email: z.string().email("Must be a valid email!"),
+  email: z.string().email("Must be a valid email!").optional().or(z.literal("")),
   phone: z.string().min(11, "Phone number must be at least 11 digits"),
   address: z.string().min(1, "Address is required!"),
   city: z.string().min(1, "District is required!"),
@@ -155,6 +155,7 @@ const CheckOut: React.FC = () => {
   >("cash-on-delivery");
 
   const [errors, setErrors] = useState<string[]>([]);
+  const [triggerValidation, setTriggerValidation] = useState(false);
 
   const subtotal: number = items.reduce(
     (acc: number, item: CartItem) => acc + item.price * item.quantity,
@@ -183,6 +184,9 @@ const CheckOut: React.FC = () => {
   const discount = 5;
 
   const handleOrderConfirm = async (): Promise<void> => {
+    // Trigger validation to show all field errors
+    setTriggerValidation(true);
+    
     // Validate checkout type and user authentication
     if (checkoutType === "user" && !user?._id) {
       Swal.fire({
@@ -193,6 +197,17 @@ const CheckOut: React.FC = () => {
       }).then(() => {
         const currentUrl = window.location.pathname + window.location.search;
         router.push(`/auth/login?redirect=${encodeURIComponent(currentUrl)}`);
+      });
+      return;
+    }
+
+    // Validate email is required for logged-in users
+    if (checkoutType === "user" && !customerInfo.email) {
+      Swal.fire({
+        icon: "error",
+        title: "Email Required",
+        text: "Email address is required for user checkout.",
+        confirmButtonColor: "#3085d6",
       });
       return;
     }
@@ -314,17 +329,6 @@ const CheckOut: React.FC = () => {
     }
   };
 
-  // Auto-fill user info when user checkout is selected
-  useEffect(() => {
-    if (checkoutType === "user" && user) {
-      setCustomerInfo(prev => ({
-        ...prev,
-        firstName: user.name?.split(" ")[0] || "",
-        lastName: user.name?.split(" ").slice(1).join(" ") || "",
-      }));
-    }
-  }, [checkoutType, user]);
-
   if (!checkoutType) {
     return (
       <div className="bg-gray-50 min-h-screen font-sans text-gray-800 p-4 sm:p-8">
@@ -364,6 +368,10 @@ const CheckOut: React.FC = () => {
               customerInfo={customerInfo}
               setCustomerInfo={setCustomerInfo}
               isGuestCheckout={checkoutType === "guest"}
+              userName={user?.name || session?.user?.name}
+              userEmail={user?.email || session?.user?.email}
+              userPhone={user?.contactNo}
+              triggerValidation={triggerValidation}
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-gray-200 rounded-lg overflow-hidden border border-gray-200">

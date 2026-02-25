@@ -42,12 +42,11 @@ export default function CheckoutOptions({
             </div>
             <h3 className="text-lg font-semibold text-gray-900">Checkout as Guest</h3>
             <p className="text-sm text-gray-600">
-              Quick checkout without creating an account. You`&apos;`ll need to fill in your details manually.
+              Quick checkout without an account.
             </p>
             <div className="text-xs text-gray-500 space-y-1">
-              <div>✓ Fast and simple</div>
-              <div>✓ No account required</div>
-              <div>✗ No order history</div>
+              <div>✓ Fast & simple</div>
+              <div>✓ No registration</div>
             </div>
           </div>
         </div>
@@ -66,14 +65,13 @@ export default function CheckoutOptions({
             </h3>
             <p className="text-sm text-gray-600">
               {user?.id 
-                ? "Use your saved information and track your orders."
-                : "Login to your account or create a new one for better experience."
+                ? "Use saved info and track orders."
+                : "Login or create account for better experience."
               }
             </p>
             <div className="text-xs text-gray-500 space-y-1">
-              <div>✓ Save order history</div>
-              <div>✓ Faster future checkouts</div>
-              <div>✓ Track your orders</div>
+              <div>✓ User Profile</div>
+              <div>✓ Order History & tracking</div>
             </div>
           </div>
         </div>

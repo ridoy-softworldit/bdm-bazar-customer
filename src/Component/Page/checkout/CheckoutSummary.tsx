@@ -79,9 +79,12 @@ export default function CheckoutSummary({
       {/* Gift Order (only in cart page) */}
       {mode === "cart" && (
         <>
-          <button className="mt-4 w-full border-2 border-[#6F42C1] text-[#6F42C1] py-3 rounded-md font-semibold hover:bg-purple-50 transition-colors">
+          <Link
+            href={"/checkout"}
+            className="mt-4 w-full border-2 border-[#6F42C1] text-[#6F42C1] py-3 rounded-md font-semibold hover:bg-purple-50 transition-colors block text-center"
+          >
             উপহার হিসেবে অর্ডার করুন
-          </button>
+          </Link>
 
           <p className="text-center text-sm text-gray-500 mt-4">
             Apply Promo Code or Voucher Code on the Shipping Page
