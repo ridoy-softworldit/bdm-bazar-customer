@@ -2,6 +2,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import toast from "react-hot-toast";
 import {
   useGetAllAuthorsQuery,
   useFollowAuthorMutation,
@@ -34,11 +35,10 @@ const AllAuthor = () => {
     if (followingId === id) return;
     setFollowingId(id);
     try {
-      const result = await followAuthor(id).unwrap();
-      // Optimistic update - manually update the cache
-      // This will trigger a re-render with updated data
+      await followAuthor(id).unwrap();
+      toast.success("Successfully followed author!");
     } catch (err) {
-      console.error("Follow failed", err);
+      toast.error("Failed to follow author");
     } finally {
       setFollowingId(null);
     }
@@ -104,15 +104,21 @@ const AllAuthor = () => {
             >
               <Link href={`/authors/${author._id}`}>
                 <div className="relative w-28 h-28 md:w-32 md:h-32 mb-3 rounded-full overflow-hidden ring-4 ring-white shadow-lg group-hover:ring-blue-100 transition-all duration-300 cursor-pointer">
-                  <Image
-                    src={author.image}
-                    alt={author.name}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 112px, 128px"
-                    placeholder="blur"
-                    blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNMQXFzpwXDmR//Z"
-                  />
+                  {author.image ? (
+                    <Image
+                      src={author.image}
+                      alt={author.name}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 112px, 128px"
+                      placeholder="blur"
+                      blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNMQXFzpwXDmR//Z"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400 text-3xl">
+                      {author.name.charAt(0)}
+                    </div>
+                  )}
                 </div>
               </Link>
 

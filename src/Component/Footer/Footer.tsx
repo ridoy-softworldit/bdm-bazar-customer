@@ -100,8 +100,8 @@ export default function BengaliFooter() {
                 <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                   <span className="text-xs">✉️</span>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="mb-1">Email Us</p>
+                <div className="min-w-0 flex-1 gap-2 flex">
+                  <p className="mb-1">Email Us:</p>
                   <a
                     href={`mailto:${contactInfo?.email || "admin@bdmbazar.com"}`}
                     className="text-blue-600 break-all hover:underline inline-block"
@@ -213,8 +213,19 @@ export default function BengaliFooter() {
         <div className="border-t border-gray-200 mt-8 pt-6">
           <div className="flex flex-col sm:flex-row justify-center sm:justify-between items-center gap-2">
             <p className="text-xs sm:text-sm text-gray-600 text-center sm:text-left">
-              © 2012-2025 BDM Bazar
+              ©{new Date().getFullYear()} BDM Bazar - All rights reserved.   
+                  
+
             </p>
+            <p> Designed & Developed by{" "}
+              <a
+                href="https://www.webq.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline"
+              >
+                WebQ Ltd.
+              </a>  </p>
           </div>
         </div>
       </div>

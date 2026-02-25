@@ -2,6 +2,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import toast from "react-hot-toast";
 import {
   Carousel,
   CarouselContent,
@@ -26,8 +27,9 @@ const PopularAuthorPageCarousel = () => {
     setFollowingId(id);
     try {
       await followAuthor(id).unwrap();
+      toast.success("Successfully followed author!");
     } catch (err) {
-      console.error("Follow failed", err);
+      toast.error("Failed to follow author");
     } finally {
       setFollowingId(null);
     }
@@ -83,13 +85,19 @@ const PopularAuthorPageCarousel = () => {
                     {/* Author Image */}
                     <Link href={`/authors/${author._id}`}>
                       <div className="relative w-20 h-20 mb-3 rounded-full overflow-hidden ring-2 ring-gray-100 hover:ring-blue-200 transition-all duration-300 cursor-pointer">
-                        <Image
-                          src={author.image}
-                          alt={author.name}
-                          fill
-                          className="object-cover hover:scale-110 transition-transform duration-300"
-                          sizes="80px"
-                        />
+                        {author.image ? (
+                          <Image
+                            src={author.image}
+                            alt={author.name}
+                            fill
+                            className="object-cover hover:scale-110 transition-transform duration-300"
+                            sizes="80px"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400 text-2xl">
+                            {author.name.charAt(0)}
+                          </div>
+                        )}
                       </div>
                     </Link>
 

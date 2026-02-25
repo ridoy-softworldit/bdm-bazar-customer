@@ -1,9 +1,11 @@
 "use client";
 import React from "react";
 import Image from "next/image";
+import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { useGetSingleAuthorsQuery, useFollowAuthorMutation } from "@/redux/featured/author/authorApi";
 import { useGetProductsByAuthorQuery } from "@/redux/featured/product/productApi";
+import { useGetAllReviewsQuery } from "@/redux/api/reviewApi";
 import { Users, BookOpen, Calendar, ShoppingCart, Star, Check } from "lucide-react";
 import { use } from "react";
 import { useAppDispatch } from "@/redux/hooks";
@@ -11,6 +13,7 @@ import { handleAddToCart } from "@/Component/Page/cart/useHandleAddtocart";
 import Link from "next/link";
 import { Card, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
 import { TProduct } from "@/types/product/product";
+import { useMemo } from "react";
 
 interface AuthorDetailsPageProps {
   params: Promise<{ id: string }>;
@@ -18,14 +21,33 @@ interface AuthorDetailsPageProps {
 
 export default function AuthorDetailsPage({ params }: AuthorDetailsPageProps) {
   const { id } = use(params);
-  const { data: author, isLoading, error } = useGetSingleAuthorsQuery(id);
+  const { data: author, isLoading, error, refetch } = useGetSingleAuthorsQuery(id);
   const { data: authorBooksResponse } = useGetProductsByAuthorQuery(id);
+  const { data: reviewsData } = useGetAllReviewsQuery("");
   const [followAuthor] = useFollowAuthorMutation();
   const [isFollowing, setIsFollowing] = React.useState(false);
   const [addedItems, setAddedItems] = React.useState<Set<string>>(new Set());
   const dispatch = useAppDispatch();
 
-  const authorBooks = authorBooksResponse?.data || [];
+  const authorBooks = useMemo(() => {
+    const books = authorBooksResponse?.data || [];
+    if (!reviewsData?.data) return books;
+    
+    return books.map((book: TProduct) => {
+      const productReviews = reviewsData.data.filter(
+        (review: { product: string | { _id: string }; status: string; _id: string }) => {
+          const reviewProductId = typeof review.product === 'string' ? review.product : review.product?._id;
+          return reviewProductId === book._id && review.status === "approved";
+        }
+      );
+      const avgRating = productReviews.length
+        ? productReviews.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / productReviews.length
+        : 0;
+      
+      return { ...book, averageRating: avgRating };
+    });
+  }, [authorBooksResponse, reviewsData]);
+
   const bookCount = authorBooks.length;
 
   const handleFollow = async () => {
@@ -33,8 +55,10 @@ export default function AuthorDetailsPage({ params }: AuthorDetailsPageProps) {
     setIsFollowing(true);
     try {
       await followAuthor(id).unwrap();
-    } catch (err) {
-      console.error("Follow failed", err);
+      toast.success("Successfully followed author!");
+      refetch();
+    } catch {
+      toast.error("Failed to follow author");
     } finally {
       setIsFollowing(false);
     }
@@ -60,7 +84,7 @@ export default function AuthorDetailsPage({ params }: AuthorDetailsPageProps) {
             key={index}
             size={14}
             className={
-              index < Math.round(rating)
+              index < Math.floor(rating)
                 ? "text-yellow-500 fill-yellow-500"
                 : "text-gray-300"
             }
@@ -104,21 +128,29 @@ export default function AuthorDetailsPage({ params }: AuthorDetailsPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="max-w-[1280px] mx-auto min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-8">
         {/* Author Profile Card */}
         <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
           <div className="flex flex-col md:flex-row gap-8">
             {/* Author Image */}
             <div className="flex-shrink-0 text-center md:text-left">
               <div className="relative w-48 h-48 mx-auto md:mx-0 rounded-full overflow-hidden ring-4 ring-gray-100 shadow-lg">
-                <Image
-                  src={author.image}
-                  alt={author.name}
-                  fill
-                  className="object-cover"
-                  sizes="192px"
-                />
+                {author.image ? (
+                  <Image
+                    src={author.image}
+                    alt={author.name}
+                    fill
+                    className="object-cover"
+                    sizes="192px"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                    <svg className="w-24 h-24 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -263,7 +295,7 @@ export default function AuthorDetailsPage({ params }: AuthorDetailsPageProps) {
                       </CardDescription>
 
                       {/* Rating Stars */}
-                      <div>{renderStars(book.averageRating)}</div>
+                      <div>{renderStars(book.averageRating || 0)}</div>
 
                       {/* Price Section */}
                       {book.productInfo.salePrice ? (

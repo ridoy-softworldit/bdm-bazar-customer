@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
 import { useGetSingleAuthorsQuery } from "@/redux/featured/author/authorApi";
 import { useGetProductsByAuthorQuery } from "@/redux/featured/product/productApi";
+import { useGetAllReviewsQuery } from "@/redux/api/reviewApi";
 import { ArrowLeft, ShoppingCart, Star, Check, BookOpen } from "lucide-react";
 import { use } from "react";
 import { useAppDispatch } from "@/redux/hooks";
 import { handleAddToCart } from "@/Component/Page/cart/useHandleAddtocart";
 import Link from "next/link";
 import { TProduct } from "@/types/product/product";
+import { useMemo } from "react";
 
 interface AuthorBooksPageProps {
   params: Promise<{ id: string }>;
@@ -20,10 +22,28 @@ export default function AuthorBooksPage({ params }: AuthorBooksPageProps) {
   const { id } = use(params);
   const { data: author } = useGetSingleAuthorsQuery(id);
   const { data: authorBooksResponse, isLoading } = useGetProductsByAuthorQuery(id);
+  const { data: reviewsData } = useGetAllReviewsQuery("");
   const [addedItems, setAddedItems] = React.useState<Set<string>>(new Set());
   const dispatch = useAppDispatch();
 
-  const authorBooks = authorBooksResponse?.data || [];
+  const authorBooks = useMemo(() => {
+    const books = authorBooksResponse?.data || [];
+    if (!reviewsData?.data) return books;
+    
+    return books.map((book: TProduct) => {
+      const productReviews = reviewsData.data.filter(
+        (review: { product: string | { _id: string }; status: string; _id: string }) => {
+          const reviewProductId = typeof review.product === 'string' ? review.product : review.product?._id;
+          return reviewProductId === book._id && review.status === "approved";
+        }
+      );
+      const avgRating = productReviews.length
+        ? productReviews.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / productReviews.length
+        : 0;
+      
+      return { ...book, averageRating: avgRating };
+    });
+  }, [authorBooksResponse, reviewsData]);
 
   const handleAddToCartWithAnimation = (product: TProduct) => {
     handleAddToCart(product, dispatch);
@@ -39,13 +59,13 @@ export default function AuthorBooksPage({ params }: AuthorBooksPageProps) {
 
   const renderStars = (rating = 0) => {
     return (
-      <div className="flex justify-center space-x-1">
+      <div className="flex space-x-1">
         {[...Array(5)].map((_, index) => (
           <Star
             key={index}
-            size={14}
+            size={16}
             className={
-              index < Math.round(rating)
+              index < Math.floor(rating)
                 ? "text-yellow-500 fill-yellow-500"
                 : "text-gray-300"
             }
@@ -94,12 +114,20 @@ export default function AuthorBooksPage({ params }: AuthorBooksPageProps) {
             {author && (
               <>
                 <div className="relative w-16 h-16 rounded-full overflow-hidden ring-2 ring-gray-200">
-                  <Image
-                    src={author.image}
-                    alt={author.name}
-                    fill
-                    className="object-cover"
-                  />
+                  {author.image ? (
+                    <Image
+                      src={author.image}
+                      alt={author.name}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                      <svg className="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                      </svg>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold text-gray-900">

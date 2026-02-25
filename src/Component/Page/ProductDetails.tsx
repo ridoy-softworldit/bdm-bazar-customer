@@ -27,11 +27,107 @@ interface ProductDetailsProps extends Book {
   onPreviewClose?: () => void;
   brandName?: string;
   isBookCategory?: boolean;
+  language?: string;
+  country?: string;
+  genre?: string[];
+  translator?: string;
+  authors?: Array<{ _id?: string; name: string }>;
+}
+
+// Export specifications rendering function
+export function renderSpecifications({
+  publisher,
+  edition,
+  editionYear,
+  numberOfPages,
+  language,
+  country,
+  binding,
+  isbn,
+  genre,
+  translator,
+}: {
+  publisher?: string;
+  edition?: string;
+  editionYear?: number;
+  numberOfPages?: number;
+  language?: string;
+  country?: string;
+  binding?: string;
+  isbn?: string;
+  genre?: string[];
+  translator?: string;
+}) {
+  return (
+    <div className="space-y-3 text-sm">
+      {publisher && (
+        <div className="flex">
+          <span className="text-gray-600 w-32">Publisher:</span>
+          <span className="text-gray-900 font-medium">{publisher}</span>
+        </div>
+      )}
+      {edition && (
+        <div className="flex">
+          <span className="text-gray-600 w-32">Edition:</span>
+          <span className="text-gray-900">{edition}</span>
+        </div>
+      )}
+      {editionYear && (
+        <div className="flex">
+          <span className="text-gray-600 w-32">Edition Year:</span>
+          <span className="text-gray-900">{editionYear}</span>
+        </div>
+      )}
+      {numberOfPages && (
+        <div className="flex">
+          <span className="text-gray-600 w-32">Pages:</span>
+          <span className="text-gray-900">{numberOfPages}</span>
+        </div>
+      )}
+      {language && (
+        <div className="flex">
+          <span className="text-gray-600 w-32">Language:</span>
+          <span className="text-gray-900">{language}</span>
+        </div>
+      )}
+      {country && (
+        <div className="flex">
+          <span className="text-gray-600 w-32">Country:</span>
+          <span className="text-gray-900">{country}</span>
+        </div>
+      )}
+      {binding && (
+        <div className="flex">
+          <span className="text-gray-600 w-32">Binding:</span>
+          <span className="text-gray-900 capitalize">{binding}</span>
+        </div>
+      )}
+      {isbn && (
+        <div className="flex">
+          <span className="text-gray-600 w-32">ISBN:</span>
+          <span className="text-gray-900">{isbn}</span>
+        </div>
+      )}
+      {genre && genre.length > 0 && (
+        <div className="flex">
+          <span className="text-gray-600 w-32">Genre:</span>
+          <span className="text-gray-900">{genre.join(", ")}</span>
+        </div>
+      )}
+      {translator && translator !== "paperback" && (
+        <div className="flex">
+          <span className="text-gray-600 w-32">Translator:</span>
+          <span className="text-gray-900">{translator}</span>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function ProductDetails({
   title,
   author,
+  authorId,
   category,
   price,
   originalPrice,
@@ -49,6 +145,17 @@ export default function ProductDetails({
   onPreviewClose,
   brandName,
   isBookCategory,
+  publisher,
+  edition,
+  editionYear,
+  numberOfPages,
+  isbn,
+  binding,
+  language,
+  country,
+  genre,
+  translator,
+  authors,
 }: ProductDetailsProps) {
   const router = useRouter(); // ✅ initialize router
   const dispatch = useDispatch();
@@ -61,6 +168,7 @@ export default function ProductDetails({
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
   const wishlistItems = useSelector((state: RootState) => state.wishlist.items);
   const isInWishlist = wishlistItems.some((item) => item.id === id);
+  const [activeTab, setActiveTab] = useState<'reviews' | 'specifications'>('reviews');
 
   const increment = () => {
     if (!stockCount || quantity < stockCount) setQuantity(quantity + 1);
@@ -150,9 +258,31 @@ export default function ProductDetails({
         <div>
           <h1 className="text-xl font-bold text-gray-900 mb-2">{title}</h1>
           {isBookCategory ? (
-            author && author !== "Brand/Publisher" && (
+            (authors && authors.length > 0) ? (
               <p className="text-blue-600 mb-2 text-sm">
-                by <span className="cursor-pointer hover:underline">{author}</span>
+                by {authors.map((auth, idx) => (
+                  <span key={auth._id || idx}>
+                    <span 
+                      className="cursor-pointer hover:underline" 
+                      onClick={() => {
+                        if (auth._id) {
+                          router.push(`/authors/${auth._id}`);
+                        }
+                      }}
+                    >
+                      {auth.name}
+                    </span>
+                    {idx < authors.length - 1 && ", "}
+                  </span>
+                ))}
+              </p>
+            ) : author && author !== "Brand/Publisher" && (
+              <p className="text-blue-600 mb-2 text-sm">
+                by <span className="cursor-pointer hover:underline" onClick={() => {
+                  if (authorId) {
+                    router.push(`/authors/${authorId}`);
+                  }
+                }}>{author}</span>
               </p>
             )
           ) : brandName && (
@@ -187,6 +317,20 @@ export default function ProductDetails({
                 : category}
             </span>
           </div>
+
+          {isBookCategory && publisher && (
+            <div className="mb-3">
+              <span className="text-sm text-gray-600">প্রকাশনী: </span>
+              <span className="text-blue-600 text-sm">{publisher}</span>
+            </div>
+          )}
+
+          {isBookCategory && numberOfPages && (
+            <div className="mb-3">
+              <span className="text-sm text-gray-600">পৃষ্ঠা: </span>
+              <span className="text-blue-600 text-sm">{numberOfPages}</span>
+            </div>
+          )}
 
           {description && (
             <div className="text-sm text-gray-700 leading-relaxed">
@@ -275,12 +419,12 @@ export default function ProductDetails({
         </div>
 
         {/* Offer Notices */}
-        <OfferNotices
+        {/* <OfferNotices
           items={[
             "৬০% পর্যন্ত ছাড় বাংলা-ইংরেজি স্টকে থাকা বিদেশি বইয়ে!",
             // "৫% এক্সট্রা ছাড় (SUPER5 কোডে) ও ন্যূনতম ৩০০৳ গিফট ভাউচার ৫০০৳+ অর্ডারে!",
           ]}
-        />
+        /> */}
 
         {/* Action Buttons */}
         <div className="space-y-3 pt-2">

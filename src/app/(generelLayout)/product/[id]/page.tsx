@@ -3,7 +3,7 @@
 "use client";
 
 import BookCoverCard from "@/Component/Page/BookCoverCard";
-import ProductDetails from "@/Component/Page/ProductDetails";
+import ProductDetails, { renderSpecifications } from "@/Component/Page/ProductDetails";
 import RelatedBooks from "@/Component/Page/RelatedBooks";
 import { useGetAllReviewsQuery } from "@/redux/api/reviewApi";
 import { ApiBook, ApiResponse, Book, RelatedBook } from "@/types/boook";
@@ -43,6 +43,7 @@ export default function BookProductPage({ params }: BookProductPageProps) {
   const [photos, setPhotos] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [showPreview, setShowPreview] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<'reviews' | 'specifications'>('reviews');
 
   const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,6 +126,8 @@ export default function BookProductPage({ params }: BookProductPageProps) {
               productData.bookInfo?.specification?.authors?.[0]?.name ||
               productData.categoryAndTags?.publisher ||
               "Brand/Publisher",
+            authorId: productData.bookInfo?.specification?.authors?.[0]?._id,
+            authors: productData.bookInfo?.specification?.authors,
             image: productData.featuredImg,
             stars: productData.averageRating,
             reviews: productData.reviewCount,
@@ -142,9 +145,12 @@ export default function BookProductPage({ params }: BookProductPageProps) {
             edition: productData.bookInfo?.specification?.edition,
             editionYear: productData.bookInfo?.specification?.editionYear,
             publisher: productData.bookInfo?.specification?.publisher || productData.categoryAndTags?.publisher,
+            language: productData.bookInfo?.specification?.language,
+            country: productData.bookInfo?.specification?.country,
+            genre: productData.bookInfo?.genre,
+            translator: productData.bookInfo?.translator,
             previewImg: productData.previewImg,
             previewPdf: productData.previewPdf,
-            // ✅ Handle preview images safely
           };
           setMainBook(mappedBook);
 
@@ -294,6 +300,11 @@ export default function BookProductPage({ params }: BookProductPageProps) {
                 onPreviewClose={() => setShowPreview(false)}
                 brandName={brandName}
                 isBookCategory={isBookCategory}
+                language={mainBook.language}
+                country={mainBook.country}
+                genre={mainBook.genre}
+                translator={mainBook.translator}
+                authors={mainBook.authors}
                 stars={
                   approvedReviews?.data?.length
                     ? approvedReviews.data.reduce((sum: number, r: any) => sum + r.rating, 0) / approvedReviews.data.length
@@ -307,8 +318,36 @@ export default function BookProductPage({ params }: BookProductPageProps) {
             <RelatedBooks books={relatedBooks} isBookCategory={isBookCategory} />
           </div>
         </div>
-        {/* Reviews Section */}
+        {/* Reviews & Specifications Section */}
         <div className="mt-16">
+          {/* Tabs */}
+          <div className="flex border-b mb-6">
+            <button
+              onClick={() => setActiveTab('reviews')}
+              className={`px-6 py-3 font-semibold transition-colors ${
+                activeTab === 'reviews'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Customer Reviews
+            </button>
+            <button
+              onClick={() => setActiveTab('specifications')}
+              className={`px-6 py-3 font-semibold transition-colors ${
+                activeTab === 'specifications'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Specifications
+            </button>
+          </div>
+
+          {/* Tab Content */}
+          {activeTab === 'reviews' ? (
+            <div>
+            <div>
           {/* Header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-2">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
@@ -508,6 +547,25 @@ export default function BookProductPage({ params }: BookProductPageProps) {
                 </span>{" "}
                 to write a review.
               </p>
+            </div>
+          )}
+        </div>
+            </div>
+          ) : (
+            <div className="p-6 bg-white rounded-xl shadow border border-gray-100">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Product Specifications</h2>
+              {renderSpecifications({
+                publisher: mainBook.publisher,
+                edition: mainBook.edition,
+                editionYear: mainBook.editionYear,
+                numberOfPages: mainBook.numberOfPages,
+                language: mainBook.language,
+                country: mainBook.country,
+                binding: mainBook.binding,
+                isbn: mainBook.isbn,
+                genre: mainBook.genre,
+                translator: mainBook.translator,
+              })}
             </div>
           )}
         </div>

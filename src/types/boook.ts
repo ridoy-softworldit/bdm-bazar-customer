@@ -4,6 +4,8 @@ export interface Book {
   title: string;
   title_bn?: string;
   author: string;
+  authorId?: string;
+  authors?: Array<{ _id?: string; name: string }>;
   image: string;
   stars: number;
   reviews: number;
@@ -22,6 +24,10 @@ export interface Book {
   edition?: string;
   editionYear?: number;
   publisher?: string;
+  language?: string;
+  country?: string;
+  genre?: string[];
+  translator?: string;
   previewImg: string[];
   previewPdf?: string;
 }
@@ -56,14 +62,18 @@ export interface ApiBook {
   };
   bookInfo: {
     specification: {
-      authors: { name: string }[];
+      authors: { _id?: string; name: string }[];
       isbn: string;
       binding: string;
       numberOfPages: number;
       edition: string;
       editionYear: number;
       publisher: string;
+      language?: string;
+      country?: string;
     };
+    genre?: string[];
+    translator?: string;
   };
   productInfo: {
     price: number;

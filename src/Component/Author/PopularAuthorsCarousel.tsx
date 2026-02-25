@@ -17,7 +17,7 @@ const PopularAuthorsCarousel = () => {
 
   if (isLoading) {
     return (
-      <div className="py-4 md:py-6 bg-gradient-to-b from-gray-50 to-white">
+      <div className=" py-4 md:py-6 bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-2 sm:px-4 max-w-6xl">
           <div className="flex gap-2 sm:gap-4 md:gap-6 justify-center overflow-hidden">
             {[...Array(5)].map((_, i) => (
@@ -40,8 +40,8 @@ const PopularAuthorsCarousel = () => {
     .slice(0, 15);
 
   return (
-    <div className="py-4 md:py-6 bg-gradient-to-b from-gray-50 to-white">
-      <div className="container mx-auto px-2 sm:px-4 max-w-6xl">
+    <div className="max-w-[1280px] mx-auto py-4 md:py-6 bg-gradient-to-b from-gray-50 to-white">
+      <div className="max-w-[1280px] mx-auto px-2 sm:px-4 ">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 md:mb-10 gap-4">
           <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 tracking-tight">
@@ -80,15 +80,12 @@ const PopularAuthorsCarousel = () => {
                               fill
                               className="object-cover group-hover:scale-110 transition-transform duration-500"
                               sizes="(max-width: 768px) 112px, (max-width: 1024px) 128px, 144px"
-                              onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                target.style.display = 'none';
-                                target.parentElement!.innerHTML = '<div class="w-full h-full bg-gray-200 flex items-center justify-center"><span class="text-gray-400 text-xs">No Image</span></div>';
-                              }}
                             />
                           ) : (
-                            <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                              <span className="text-gray-400 text-xs">No Image</span>
+                            <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                              <svg className="w-1/2 h-1/2 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                              </svg>
                             </div>
                           )}
                         </div>
