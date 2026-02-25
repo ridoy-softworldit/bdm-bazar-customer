@@ -77,8 +77,8 @@ export default function RelatedBooks({ books, isBookCategory = true }: RelatedBo
                   <div className="flex items-center gap-1 mb-1">
                     <div className="flex text-orange-400 text-xs">
                       {Array.from({ length: 5 }).map((_, i) => (
-                        <span key={i}>
-                          {i < Math.floor(book.stars) ? "★" : "☆"}
+                        <span key={i} style={{ color: i < Math.floor(book.stars) ? '#f59e0b' : '#d1d5db' }}>
+                          ★
                         </span>
                       ))}
                     </div>

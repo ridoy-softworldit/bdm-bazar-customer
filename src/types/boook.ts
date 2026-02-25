@@ -16,11 +16,11 @@ export interface Book {
   category: string[] | Category[];
   inStock: boolean;
   stockCount: number;
-  isbn: string;
-  binding: string;
-  numberOfPages: number;
-  edition: string;
-  editionYear: number;
+  isbn?: string;
+  binding?: string;
+  numberOfPages?: number;
+  edition?: string;
+  editionYear?: number;
   publisher?: string;
   previewImg: string[];
   previewPdf?: string;
@@ -72,6 +72,7 @@ export interface ApiBook {
     totalDiscount?: number;
     inStock: boolean;
     quantity: number;
+    brand?: string;
   };
   averageRating: number;
   reviewCount: number;

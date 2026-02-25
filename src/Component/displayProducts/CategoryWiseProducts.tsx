@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -26,6 +26,7 @@ const CategoryWiseProducts: React.FC<CategoryWiseProductsProps> = ({ categoryNam
   const dispatch = useAppDispatch();
   const router = useRouter();
   const [addedItems, setAddedItems] = useState<Set<string>>(new Set());
+  const [brands, setBrands] = useState<Record<string, string>>({});
   const scrollRef = useRef<HTMLDivElement>(null);
   
   const { data: categoriesData } = useGetFeaturedCategoriesQuery("");
@@ -34,14 +35,50 @@ const CategoryWiseProducts: React.FC<CategoryWiseProductsProps> = ({ categoryNam
   const allProducts = allProductsData?.data || [];
   
   // Filter products by specific category name
-  const products = allProducts.filter((product: any) => {
-    // Check if product's categoryAndTags.categories array contains a category with matching name
-    const categoryMatch = product.categoryAndTags?.categories?.some((cat: any) => 
-      cat?.name === categoryName
-    );
+  const products = useMemo(() => {
+    return allProducts.filter((product: any) => {
+      const categoryMatch = product.categoryAndTags?.categories?.some((cat: any) => 
+        cat?.name === categoryName
+      );
+      return categoryMatch;
+    }).slice(0, 10).map((product: any) => {
+      const categoryName = product.categoryAndTags?.categories?.[0]?.name;
+      const bookCategories = ['book', 'books', 'বই', 'novel', 'story', 'literature', 'fiction', 'non-fiction'];
+      const isBook = categoryName ? bookCategories.some((cat: string) => 
+        categoryName.toLowerCase().includes(cat.toLowerCase())
+      ) : false;
+      return { ...product, isBook };
+    });
+  }, [allProducts, categoryName]);
+  
+  useEffect(() => {
+    const fetchBrands = async () => {
+      const brandIds = products
+        .filter((p: any) => !p.isBook && p.productInfo?.brand && typeof p.productInfo.brand === 'string')
+        .map((p: any) => p.productInfo.brand);
+      
+      const uniqueIds = [...new Set(brandIds)] as string[];
+      const brandMap: Record<string, string> = {};
+      
+      await Promise.all(
+        uniqueIds.map(async (id: string) => {
+          try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/brand/${id}`);
+            const data = await res.json();
+            if (data.success && data.data?.name) {
+              brandMap[id] = data.data.name;
+            }
+          } catch (err) {
+            console.error('Brand fetch error:', err);
+          }
+        })
+      );
+      
+      setBrands(brandMap);
+    };
     
-    return categoryMatch;
-  }).slice(0, 10);
+    if (products.length) fetchBrands();
+  }, [products]);
   
   // Get category info for display
   const categoryInfo = categories.find((cat: any) => 
@@ -52,6 +89,16 @@ const CategoryWiseProducts: React.FC<CategoryWiseProductsProps> = ({ categoryNam
   const mainCategory = categoryInfo?.mainCategory || 'book';
   
 
+
+  const getProductAuthorOrBrand = (product: any) => {
+    if (product.isBook) {
+      return product?.bookInfo?.specification?.authors?.[0]?.name || 
+             product?.categoryAndTags?.publisher || 
+             "Unknown Author";
+    }
+    const brandId = typeof product.productInfo?.brand === 'string' ? product.productInfo.brand : product.productInfo?.brand?._id;
+    return brandId && brands[brandId] ? brands[brandId] : "Brand";
+  };
 
   const handleAddToCartWithAnimation = (product: any) => {
     handleAddToCart(product, dispatch);
@@ -217,9 +264,7 @@ const CategoryWiseProducts: React.FC<CategoryWiseProductsProps> = ({ categoryNam
                   </CardTitle>
 
                   <CardDescription className="text-xs text-gray-600 line-clamp-1">
-                    {product?.bookInfo?.specification?.authors?.[0]?.name ||
-                      product?.categoryAndTags?.publisher ||
-                      "Brand/Publisher"}
+                    {getProductAuthorOrBrand(product)}
                   </CardDescription>
 
                   {/* Price Section */}

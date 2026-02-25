@@ -37,15 +37,7 @@ export default function ReadBooksPage() {
             )
           );
           
-          // Debug: log what's in the digital field
-          if (product.productInfo.digital) {
-          }
-          
-          // Include books that have digital field OR preview images
-          const hasDigital = product.productInfo.digital;
-          const hasPreview = product.previewImg && product.previewImg.length > 0;
-          
-          return isBookCategory && (hasDigital || hasPreview);
+          return isBookCategory && product.previewPdf;
         });
         
         setBooks(bookProducts);
@@ -67,13 +59,11 @@ export default function ReadBooksPage() {
   });
 
   const openBook = (book: TProduct) => {
-    const digitalUrl = book.productInfo.digital || '';
-    
-    // If it's a direct PDF, open it
-    if (digitalUrl.includes('.pdf')) {
-      window.open(digitalUrl, '_blank');
+    // Priority: previewPdf (Google Drive) > previewImg
+    if (book.previewPdf) {
+      setSelectedBook(book);
+      setShowPreview(true);
     } else if (book.previewImg && book.previewImg.length > 0) {
-      // If preview images exist, show them as PDF pages
       setSelectedBook(book);
       setShowPreview(true);
     } else {
@@ -166,7 +156,7 @@ export default function ReadBooksPage() {
                         variant="outline"
                         className="w-full mt-2 text-xs"
                       >
-                        {book.previewImg && book.previewImg.length > 0 ? 'পূর্বরূপ দেখুন' : 'PDF পড়ুন'}
+                        পূর্বরূপ দেখুন
                       </Button>
                     </div>
                   </CardContent>
@@ -185,8 +175,34 @@ export default function ReadBooksPage() {
       </div>
 
 
-      {/* Preview Modal */}
-      {showPreview && selectedBook && selectedBook.previewImg && selectedBook.previewImg.length > 0 && (
+      {/* PDF Preview Modal */}
+      {showPreview && selectedBook && selectedBook.previewPdf && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-0 sm:p-4">
+          <div className="bg-white w-full h-full sm:h-[95vh] sm:max-w-5xl sm:rounded-lg overflow-hidden flex flex-col shadow-2xl">
+            <div className="flex justify-between items-center p-3 sm:p-4 border-b bg-gray-50">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 truncate">
+                পূর্বরূপ: {selectedBook.description.name}
+              </h3>
+              <button
+                onClick={closePreview}
+                className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 sm:p-2 rounded-full transition-colors flex-shrink-0"
+              >
+                <X className="w-5 h-5 sm:w-6 sm:h-6" />
+              </button>
+            </div>
+            <div className="flex-1 bg-white">
+              <iframe
+                src={selectedBook.previewPdf}
+                className="w-full h-full border-0 block"
+                title="PDF Preview"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Image Preview Modal */}
+      {showPreview && selectedBook && !selectedBook.previewPdf && selectedBook.previewImg && selectedBook.previewImg.length > 0 && (
         <div className="fixed inset-0 backdrop-blur-sm bg-white/30 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
             <div className="flex justify-between items-center p-4 border-b">

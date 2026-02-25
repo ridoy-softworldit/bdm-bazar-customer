@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useMemo, useState, useRef } from "react";
+import React, { useMemo, useState, useRef, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -22,6 +22,7 @@ const NewReleasedProducts: React.FC = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const [addedItems, setAddedItems] = useState<Set<string>>(new Set());
+  const [brands, setBrands] = useState<Record<string, string>>({});
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const handleAddToCartWithAnimation = (product: any) => {
@@ -44,33 +45,63 @@ const NewReleasedProducts: React.FC = () => {
       .sort((a: any, b: any) => {
         const dateA = new Date(a.createdAt || 0).getTime();
         const dateB = new Date(b.createdAt || 0).getTime();
-        return dateB - dateA; // Sort descending (newest first)
+        return dateB - dateA;
       })
-      .slice(0, 12); // Show first 12 newest products
+      .slice(0, 12)
+      .map((product: any) => {
+        const categoryName = product.categoryAndTags?.categories?.[0]?.name;
+        const bookCategories = ['book', 'books', 'বই', 'novel', 'story', 'literature', 'fiction', 'non-fiction'];
+        const isBook = categoryName ? bookCategories.some((cat: string) => 
+          categoryName.toLowerCase().includes(cat.toLowerCase())
+        ) : false;
+        
+        return { ...product, isBook };
+      });
   }, [allProducts]);
+
+  useEffect(() => {
+    const fetchBrands = async () => {
+      const brandIds = newProducts
+        .filter((p: any) => !p.isBook && p.productInfo?.brand && typeof p.productInfo.brand === 'string')
+        .map((p: any) => p.productInfo.brand);
+      
+      const uniqueIds = [...new Set(brandIds)] as string[];
+      const brandMap: Record<string, string> = {};
+      
+      await Promise.all(
+        uniqueIds.map(async (id: string) => {
+          try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/brand/${id}`);
+            const data = await res.json();
+            if (data.success && data.data?.name) {
+              brandMap[id] = data.data.name;
+            }
+          } catch (err) {
+            console.error('Brand fetch error:', err);
+          }
+        })
+      );
+      
+      setBrands(brandMap);
+    };
+    
+    if (newProducts.length) fetchBrands();
+  }, [newProducts]);
+
+  const getProductAuthorOrBrand = (product: any) => {
+    if (product.isBook) {
+      return product?.bookInfo?.specification?.authors?.[0]?.name || 
+             product?.categoryAndTags?.publisher || 
+             "Unknown Author";
+    }
+    const brandId = typeof product.productInfo?.brand === 'string' ? product.productInfo.brand : product.productInfo?.brand?._id;
+    return brandId && brands[brandId] ? brands[brandId] : "Brand";
+  };
 
   const scrollBy = (delta: number) => {
     const el = scrollRef.current;
     if (!el) return;
     el.scrollBy({ left: delta, behavior: "smooth" });
-  };
-
-  const renderStars = (rating = 0) => {
-    return (
-      <div className="flex space-x-1">
-        {[...Array(5)].map((_, index) => (
-          <Star
-            key={index}
-            size={16}
-            className={
-              index < Math.round(rating)
-                ? "text-yellow-500 fill-yellow-500"
-                : "text-gray-300"
-            }
-          />
-        ))}
-      </div>
-    );
   };
 
   const { isLoading } = useGetAllProductsQuery("");
@@ -187,9 +218,7 @@ const NewReleasedProducts: React.FC = () => {
                 </CardTitle>
 
                 <CardDescription className="text-xs text-gray-600 line-clamp-1">
-                  {product?.bookInfo?.specification?.authors?.[0]?.name ||
-                    product?.categoryAndTags?.publisher ||
-                    "Brand/Publisher"}
+                  {getProductAuthorOrBrand(product)}
                 </CardDescription>
 
                 {/* Discount Badge */}

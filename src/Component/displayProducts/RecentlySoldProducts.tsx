@@ -15,6 +15,8 @@ import Link from "next/link";
 import { useAppDispatch } from "@/redux/hooks";
 import { handleAddToCart } from "../Page/cart/useHandleAddtocart";
 import { useGetRecentlySoldProductsQuery } from "@/redux/featured/product/productApi";
+import { useGetAllReviewsQuery } from "@/redux/api/reviewApi";
+import { useMemo } from "react";
 
 const RecentlySoldProducts: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -22,7 +24,44 @@ const RecentlySoldProducts: React.FC = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   
   const { data: recentlySoldData, isLoading } = useGetRecentlySoldProductsQuery("");
+  const { data: reviewsData } = useGetAllReviewsQuery("");
   const recentlySoldProducts = recentlySoldData?.data || [];
+
+  const productsWithRatings = useMemo(() => {
+    if (!reviewsData?.data) return recentlySoldProducts;
+    
+    return recentlySoldProducts.map((product: any) => {
+      const productReviews = reviewsData.data.filter(
+        (review: any) => {
+          const reviewProductId = typeof review.product === 'string' ? review.product : review.product?._id;
+          return reviewProductId === product._id && review.status === "approved";
+        }
+      );
+      const avgRating = productReviews.length
+        ? productReviews.reduce((sum: number, r: any) => sum + r.rating, 0) / productReviews.length
+        : 0;
+      
+      const categoryName = product.categoryAndTags?.categories?.[0]?.name;
+      const bookCategories = ['book', 'books', 'বই', 'novel', 'story', 'literature', 'fiction', 'non-fiction'];
+      const isBook = categoryName ? bookCategories.some((cat: string) => 
+        categoryName.toLowerCase().includes(cat.toLowerCase())
+      ) : false;
+      
+      return { ...product, averageRating: avgRating, isBook };
+    });
+  }, [recentlySoldProducts, reviewsData]);
+
+  const getProductAuthorOrBrand = (product: any) => {
+    if (product.isBook) {
+      return product?.bookInfo?.specification?.authors?.[0]?.name || 
+             product?.categoryAndTags?.publisher || 
+             "Unknown Author";
+    }
+    const brandName = typeof product.productInfo?.brand === 'object' 
+      ? product.productInfo?.brand?.name 
+      : null;
+    return brandName || "Brand";
+  };
 
   const handleAddToCartWithAnimation = (product: any) => {
     handleAddToCart(product, dispatch);
@@ -44,7 +83,7 @@ const RecentlySoldProducts: React.FC = () => {
             key={index}
             size={16}
             className={
-              index < Math.round(rating)
+              index < Math.floor(rating)
                 ? "text-yellow-500 fill-yellow-500"
                 : "text-gray-300"
             }
@@ -108,7 +147,7 @@ const RecentlySoldProducts: React.FC = () => {
           ref={scrollRef}
           className="flex gap-3 overflow-x-auto scroll-smooth pb-4 no-scrollbar"
         >
-          {recentlySoldProducts.map((product: any) => (
+          {productsWithRatings.map((product: any) => (
             <Card
               key={product._id}
               className="group relative overflow-hidden hover:shadow-xl transition-all duration-500 rounded-lg border-none text-center flex-shrink-0 w-[200px] snap-start"
@@ -180,9 +219,7 @@ const RecentlySoldProducts: React.FC = () => {
                   </CardTitle>
 
                   <CardDescription className="text-sm text-gray-600">
-                    {product?.bookInfo?.specification?.authors?.[0]?.name ||
-                      product?.categoryAndTags?.publisher ||
-                      "Brand/Publisher"}
+                    {getProductAuthorOrBrand(product)}
                   </CardDescription>
 
                   {/* Rating Stars */}

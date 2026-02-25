@@ -49,6 +49,8 @@ export type TProductInfo = {
     length?: string;
   };
   weight?: string;
+  brand?: string; // Brand ID
+  productTitle?: string;
 };
 
 export type TAuthor = {
@@ -86,6 +88,7 @@ export interface TProduct {
   featuredImg: string;
   gallery?: string[];
   previewImg?: string[];
+  previewPdf?: string;
   video?: string;
   brandAndCategories?: {
     brand?: string;
@@ -137,6 +140,18 @@ export type TPopulatedCategory = {
   createdAt: string;
   updatedAt: string;
   __v: number;
+};
+
+export type TBrand = {
+  _id: string;
+  name: string;
+  slug?: string;
+  details?: string;
+  icon?: {
+    name: string;
+    url: string;
+  };
+  image?: string;
 };
 
 export type TPopulatedCategoryAndTags = {

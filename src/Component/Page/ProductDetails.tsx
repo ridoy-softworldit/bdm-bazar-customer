@@ -25,6 +25,8 @@ interface ProductDetailsProps extends Book {
   title: string;
   showPreview?: boolean;
   onPreviewClose?: () => void;
+  brandName?: string;
+  isBookCategory?: boolean;
 }
 
 export default function ProductDetails({
@@ -45,6 +47,8 @@ export default function ProductDetails({
   previewPdf,
   showPreview: externalShowPreview,
   onPreviewClose,
+  brandName,
+  isBookCategory,
 }: ProductDetailsProps) {
   const router = useRouter(); // ✅ initialize router
   const dispatch = useDispatch();
@@ -145,9 +149,17 @@ export default function ProductDetails({
         {/* Product Info */}
         <div>
           <h1 className="text-xl font-bold text-gray-900 mb-2">{title}</h1>
-          <p className="text-blue-600 mb-2 text-sm">
-            by <span className="cursor-pointer hover:underline">{author}</span>
-          </p>
+          {isBookCategory ? (
+            author && author !== "Brand/Publisher" && (
+              <p className="text-blue-600 mb-2 text-sm">
+                by <span className="cursor-pointer hover:underline">{author}</span>
+              </p>
+            )
+          ) : brandName && (
+            <p className="text-blue-600 mb-2 text-sm">
+              by <span className="cursor-pointer hover:underline">{brandName}</span>
+            </p>
+          )}
 
           <div className="flex items-center gap-2 mb-2">
             <div className="flex items-center gap-1">
