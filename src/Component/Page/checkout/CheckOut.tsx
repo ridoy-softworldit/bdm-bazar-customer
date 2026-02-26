@@ -15,6 +15,7 @@ import CheckoutOptions from "./CheckoutOptions";
 import useSettings from "@/hooks/useSettings";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import OrderPreviewModal from "./OrderPreviewModal";
 
 // Zod Schema
 const objectIdSchema = z
@@ -156,6 +157,7 @@ const CheckOut: React.FC = () => {
 
   const [errors, setErrors] = useState<string[]>([]);
   const [triggerValidation, setTriggerValidation] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   const subtotal: number = items.reduce(
     (acc: number, item: CartItem) => acc + item.price * item.quantity,
@@ -183,7 +185,7 @@ const CheckOut: React.FC = () => {
   const tax = 10;
   const discount = 5;
 
-  const handleOrderConfirm = async (): Promise<void> => {
+  const handleOrderClick = (): void => {
     // Trigger validation to show all field errors
     setTriggerValidation(true);
     
@@ -230,6 +232,13 @@ const CheckOut: React.FC = () => {
       });
       return;
     }
+
+    // Show preview modal
+    setShowPreview(true);
+  };
+
+  const handleOrderConfirm = async (): Promise<void> => {
+    setShowPreview(false);
 
     const orderInfo = items.map((item: CartItem) => {
       const itemSubtotal = item.price * item.quantity;
@@ -428,7 +437,17 @@ const CheckOut: React.FC = () => {
                 mode="confirm"
                 subtotal={subtotal}
                 deliveryCharge={deliveryCharge}
+                onConfirm={handleOrderClick}
+              />
+              <OrderPreviewModal
+                isOpen={showPreview}
+                onClose={() => setShowPreview(false)}
                 onConfirm={handleOrderConfirm}
+                onEdit={() => setShowPreview(false)}
+                items={items}
+                customerInfo={customerInfo}
+                subtotal={subtotal}
+                deliveryCharge={deliveryCharge}
               />
             </div>
           </div>
