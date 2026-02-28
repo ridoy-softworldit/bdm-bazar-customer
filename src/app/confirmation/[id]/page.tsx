@@ -204,7 +204,7 @@ export default function OrderConfirmation() {
               <div className="mb-6 md:mb-8 pb-6 md:pb-8 border-b border-gray-200">
                 <h2 className="font-bold text-gray-900 mb-4 text-base sm:text-lg">Order Items</h2>
                 <div className="space-y-3">
-                  {orderInfo.map((item, index) => (
+                  {orderInfo.map((item, index) => item.productInfo ? (
                     <div key={index} className="flex gap-3 p-3 bg-gray-50 rounded-lg">
                       <Image src={item.productInfo.featuredImg} alt={item.productInfo.description.name} width={80} height={80} className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded" />
                       <div className="flex-1">
@@ -213,7 +213,7 @@ export default function OrderConfirmation() {
                         <p className="text-sm sm:text-base font-semibold text-gray-900 mt-1">৳ {item.totalAmount.total}</p>
                       </div>
                     </div>
-                  ))}
+                  ) : null)}
                 </div>
                 <p className="text-xs sm:text-sm text-gray-600 mt-4">
                   Your order has been successfully placed. You can track your order status anytime.
@@ -306,22 +306,13 @@ export default function OrderConfirmation() {
                 </div>
               </div>
 
-              {/* Rewards Badge */}
-              <div className="bg-gradient-to-r from-amber-400 to-amber-500 rounded-lg p-3 sm:p-4 text-center">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full flex items-center justify-center mx-auto mb-2">
-                  <span className="text-xl sm:text-2xl">🎁</span>
-                </div>
-                <p className="text-white text-sm font-medium mb-1">
-                  অভিনন্দন {customerInfo.firstName}
+              {/* Thank You Message */}
+              <div className="bg-gradient-to-r from-cyan-500 to-cyan-600 rounded-lg p-3 sm:p-4 text-center">
+                <p className="text-white text-sm sm:text-base font-medium">
+                  ধন্যবাদ {customerInfo.firstName}
                 </p>
-                <p className="text-white text-xs">
-                  সফল অর্ডারে পাবেন {Math.floor(totalAmount / 10)} পয়েন্টস,
-                </p>
-                <p className="text-white text-xs">
-                  আপনার সকল পয়েন্ট দেখতে{" "}
-                  <a href="#" className="underline font-medium">
-                    ক্লিক করুন
-                  </a>
+                <p className="text-white text-xs sm:text-sm mt-1">
+                  আপনার অর্ডারটি সফলভাবে সম্পন্ন হয়েছে
                 </p>
               </div>
             </div>

@@ -377,20 +377,19 @@ const CheckOut: React.FC = () => {
     <div className="bg-gray-50 min-h-screen font-sans text-gray-800 p-4 sm:p-8">
       <div className="max-w-6xl mx-auto">
         {/* Back to options */}
-        <div className="mb-4">
-          <button
-            onClick={() => setCheckoutType(null)}
-            className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-2"
-          >
-            ← Back to checkout options
-          </button>
-          <div className="mt-2 text-sm text-gray-600">
-            Checkout as: <span className="font-semibold capitalize">{checkoutType}</span>
-            {checkoutType === "user" && user && (
-              <span className="ml-2 text-green-600">({user.name || user.email})</span>
-            )}
+        {!user?._id && !session?.user?.id && (
+          <div className="mb-4">
+            <button
+              onClick={() => setCheckoutType(null)}
+              className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-2"
+            >
+              ← Back to checkout options
+            </button>
+            <div className="mt-2 text-sm text-gray-600">
+              Checkout as: <span className="font-semibold capitalize">{checkoutType}</span>
+            </div>
           </div>
-        </div>
+        )}
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Side */}
